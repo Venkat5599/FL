@@ -10,7 +10,7 @@ interface NetworkState {
 }
 
 const Ctx = createContext<NetworkState>({ network: "testnet", setNetwork: () => {}, ready: false });
-const KEY = "kollateral.network";
+const KEY = "gigabags.network";
 
 // App-wide active-network store. Trades, balances, and the vault display all
 // read this. Defaults to testnet (no real funds) until the user opts into

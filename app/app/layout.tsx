@@ -24,7 +24,7 @@ const pixel = Pixelify_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "KOLlateral — the market remembers",
+  title: "GigaBags — the market remembers",
   description: "Forensic accountability for crypto influencers. Backtest their calls, catch their wallets, fade the noise.",
 };
 

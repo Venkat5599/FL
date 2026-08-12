@@ -1,22 +1,22 @@
-# KOLlateral — Design Spec
+# GigaBags — Design Spec
 
-*ETHGlobal Lisbon 2026 · working name: **KOLlateral** ("KOL" + collateral; also: collateral damage) · submissions due Sun Jul 26, 9:00 AM WEST*
+*ETHGlobal Lisbon 2026 · working name: **GigaBags** ("KOL" + collateral; also: collateral damage) · submissions due Sun Jul 26, 9:00 AM WEST*
 
 ## One-liner
 
-**KOLlateral is a trading terminal where the signal feed is crypto influencers' public calls — backtested, TEE-verified, and tradeable in either direction.** Every call gets priced. Every deletion gets caught. Every caller can post collateral.
+**GigaBags is a trading terminal where the signal feed is crypto influencers' public calls — backtested, TEE-verified, and tradeable in either direction.** Every call gets priced. Every deletion gets caught. Every caller can post collateral.
 
 Tagline: **"The market remembers."**
 
 ## Product statement (the reframe that wins Uniswap)
 
-KOLlateral is NOT a wall of shame with a swap button. It is a **trading terminal** whose edge is accountability data:
+GigaBags is NOT a wall of shame with a swap button. It is a **trading terminal** whose edge is accountability data:
 
 - The **feed** is influencer calls, parsed into structured signals in near-real-time.
 - Every call card carries the caller's **live track record** (win rate, P&L vs ETH benchmark).
 - Traders hit **FADE** (opposite side) or **FOLLOW** (same side) — real swaps via Uniswap Trading API.
 - The **dossier** (per-influencer forensic page) is the research layer under the terminal.
-- **KOLlateral staking**: callers back their own calls with stake; failed calls get clawed back to the follower pool. (Hackathon: UI states real, escrow simple/simulated.)
+- **GigaBags staking**: callers back their own calls with stake; failed calls get clawed back to the follower pool. (Hackathon: UI states real, escrow simple/simulated.)
 
 ## Signal taxonomy (closed templates — no free-text signals)
 
@@ -124,7 +124,7 @@ Market splits into four camps — none covers our full scope:
 
 **Threats to acknowledge if asked:** pump.fun (owns Kolscan + Padre/Terminal — one product decision from closing the gap); Axiom (owns order flow, in-terminal X tracker). **Structural risk:** X's Jan 2026 API crackdown killed Kaito Yaps — data sourcing is our hardest dependency (→ Farcaster/archive fallback is strategic, not just tactical).
 
-**Positioning line:** "Sanitizer counts wins, DexCheck counts mentions, Kolscan watches wallets. Nobody connects what they SAID to what they DID, lets you TRADE against it, makes them STAKE on it, or can PROVE the scoring wasn't rigged. KOLlateral is all four."
+**Positioning line:** "Sanitizer counts wins, DexCheck counts mentions, Kolscan watches wallets. Nobody connects what they SAID to what they DID, lets you TRADE against it, makes them STAKE on it, or can PROVE the scoring wasn't rigged. GigaBags is all four."
 
 ## Cut order (if behind) — revised post-market-research
 

@@ -34,7 +34,7 @@ function countCalls(): number {
 
 async function indexOne(handle: string) {
   const tweets = await scrapeTweets(handle, LIMIT);
-  const tmp = path.join(tmpdir(), `kollateral-live-${handle}-${Date.now()}.json`);
+  const tmp = path.join(tmpdir(), `gigabags-live-${handle}-${Date.now()}.json`);
   writeFileSync(tmp, JSON.stringify(tweets));
   const imp = importArchive(handle, tmp); // idempotent: INSERT OR IGNORE on tweet id
   const before = countCalls();

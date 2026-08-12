@@ -90,7 +90,7 @@ export async function GET(
         </div>
 
         <div style={{ display: "flex", fontSize: 22, color: "#525252" }}>
-          kollateral · scoring verified by TEE inference on 0G
+          gigabags · scoring verified by TEE inference on 0G
         </div>
       </div>
     ),

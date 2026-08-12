@@ -1,4 +1,4 @@
-# KOLlateral — Frontend Feature Spec (functional only)
+# GigaBags — Frontend Feature Spec (functional only)
 
 > **Purpose:** build and test the frontend *functionality* first — routing, data, actions, states — with **no styling / UI / UX**. Plain, unstyled elements are fine. Visual design is a separate later pass. This doc is the checklist for a full frontend functional test.
 

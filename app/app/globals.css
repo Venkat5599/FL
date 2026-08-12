@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* KOLlateral — dither / 1-bit forensic. LIGHT: bone-white paper, near-black ink,
+/* GigaBags — dither / 1-bit forensic. LIGHT: bone-white paper, near-black ink,
    halftone dither as the surface voice, red/green only for money. Dark tokens are
    kept (--dark*) for the high-contrast dithered illustration blocks. */
 :root {
@@ -71,7 +71,7 @@ h1, h2, h3, h4 {
 }
 .tnum { font-variant-numeric: tabular-nums; }
 .pixel { font-family: var(--font-pixel), var(--font-mono), monospace; }
-/* KOL = key opinion leaders, the pun in KOLlateral. Highlight it. */
+/* KOL = key opinion leaders. Highlight it. */
 .kol {
   background: var(--signal);
   color: var(--dark);

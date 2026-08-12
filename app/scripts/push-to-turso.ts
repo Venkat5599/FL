@@ -6,7 +6,7 @@ import { getDb } from "../lib/db";
 // etc.) and then append live tweets to the same shared DB.
 //
 // Prereqs (set in .env or the shell): TURSO_DATABASE_URL, TURSO_AUTH_TOKEN.
-// Optional: SOURCE_DB (defaults to ./kollateral.db).
+// Optional: SOURCE_DB (defaults to ./gigabags.db).
 //
 // Run: node --env-file=.env --import tsx scripts/push-to-turso.ts
 async function main() {
@@ -18,7 +18,7 @@ async function main() {
   // getDb() connects to Turso (env is set) and runs schema.sql + every
   // migration there, so the destination schema matches exactly.
   const dst = getDb();
-  const src = new Database(process.env.SOURCE_DB ?? "./kollateral.db");
+  const src = new Database(process.env.SOURCE_DB ?? "./gigabags.db");
 
   const tables = (
     src.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all() as { name: string }[]

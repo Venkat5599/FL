@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const REPO_URL = "https://github.com/RomarioKavin1/kollateral-extension";
+const REPO_URL = "https://github.com/Venkat5599/gigabags-extension";
 
 const STEPS = [
   {
@@ -34,7 +34,7 @@ const STEPS = [
   {
     n: "05",
     t: "Open any X profile",
-    d: "Visit a profile page, e.g. x.com/CryptoTony__. The KOLlateral analytics card appears just below the Follow button within a second or two.",
+    d: "Visit a profile page, e.g. x.com/CryptoTony__. The GigaBags analytics card appears just below the Follow button within a second or two.",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function ExtensionPage() {
       <div style={{ borderBottom: "1px solid var(--line)", paddingBottom: 20 }}>
         <h1 style={{ fontSize: "clamp(32px, 6vw, 56px)", maxWidth: "16ch" }}>The browser extension.</h1>
         <p style={{ marginTop: 14, color: "var(--muted)", fontSize: 15, lineHeight: 1.7, maxWidth: "62ch" }}>
-          KOLlateral&apos;s accountability, on every X profile, no tab-switching. It injects a compact card
+          GigaBags&apos;s accountability, on every X profile, no tab-switching. It injects a compact card
           just below the Follow button: headline P&amp;L%, signal and scored-call counts, contradiction
           rate, TEE-verified count, the latest call, and a link straight to the full dossier.
         </p>
@@ -84,7 +84,7 @@ export default function ExtensionPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/extension-preview.png"
-            alt="KOLlateral analytics card injected onto an X profile page, showing P&L, signals, contradiction rate, and TEE-verified count"
+            alt="GigaBags analytics card injected onto an X profile page, showing P&L, signals, contradiction rate, and TEE-verified count"
             style={{
               maxWidth: "100%",
               width: "100%",
@@ -119,9 +119,9 @@ export default function ExtensionPage() {
           <div className="label">// good to know</div>
           <p style={{ color: "var(--muted)", fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>
             It defaults to the live{" "}
-            <span className="tnum" style={{ color: "var(--ink)" }}>https://kollateral.vercel.app</span>{" "}
+            <span className="tnum" style={{ color: "var(--ink)" }}>https://gigabags.vercel.app</span>{" "}
             API, so it works out of the box, no setup, no keys. Only creators already indexed by
-            KOLlateral show data; unindexed profiles simply won&apos;t get a card.
+            GigaBags show data; unindexed profiles simply won&apos;t get a card.
           </p>
           <p style={{ color: "var(--muted)", fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>
             Plain vanilla JS/CSS, loaded as a Manifest V3 content script, nothing to compile, no

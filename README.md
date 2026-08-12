@@ -1,8 +1,8 @@
-# KOLlateral
+# GigaBags
 
 **The accountability layer for crypto influencers: build a verifiable record, back the real traders.**
 
-Live app: **https://kollateral.vercel.app** · Browser extension: **https://github.com/RomarioKavin1/kollateral-extension**
+Live app: **https://gigabags.vercel.app** · Browser extension: **https://github.com/Venkat5599/gigabags-extension**
 
 Built for ETHGlobal Lisbon 2026 (0G, The Graph, Uniswap Foundation).
 
@@ -10,7 +10,7 @@ Built for ETHGlobal Lisbon 2026 (0G, The Graph, Uniswap Foundation).
 
 ## What it is
 
-Crypto influencers post hundreds of "calls" a week, delete the ones that lose, and leave no shared record of whether following them ever made money. KOLlateral fixes both sides of that with one thing: a public, verifiable track record.
+Crypto influencers post hundreds of "calls" a week, delete the ones that lose, and leave no shared record of whether following them ever made money. GigaBags fixes both sides of that with one thing: a public, verifiable track record.
 
 For a caller who is actually good, the record is an asset they own. Every explicit call becomes a structured signal (asset, direction, target, confidence), gets priced against real DEX history, and shows up as numbers they can point to. Losing calls are archived and flagged in red instead of disappearing, and each call is checked against the caller's own on-chain wallet, so "said accumulate, sold four hours later" becomes a contradiction with a transaction hash attached.
 
@@ -33,7 +33,7 @@ read a caller's public X calls
 
 ## Sponsor integrations, with the exact contracts and code
 
-Every integration below runs against live infrastructure. Nothing is mocked. Code links point at [`github.com/RomarioKavin1/kollateral`](https://github.com/RomarioKavin1/kollateral); the Next.js app lives under `app/`.
+Every integration below runs against live infrastructure. Nothing is mocked. Code links point at [`github.com/Venkat5599/FL`](https://github.com/Venkat5599/FL); the Next.js app lives under `app/`.
 
 ### Uniswap (execution)
 
@@ -48,12 +48,12 @@ Uniswap is what turns a verdict into a position. We integrated it two ways so bo
 | Hosted Trading API | `https://trade-api.gateway.uniswap.org/v1` | Base mainnet |
 
 - **Direct SwapRouter02 path (testnet).** The hosted Trading API does not index Base Sepolia, so we located the deployed WETH/USDC v3 pool on-chain and call `SwapRouter02.exactInputSingle` ourselves, then decode the ERC-20 `Transfer` out of the receipt to record the real output amount.
-  - Router address: [`app/lib/onchain-swap.ts#L22`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/onchain-swap.ts#L22)
-  - `exactInputSingle` call: [`app/lib/onchain-swap.ts#L130`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/onchain-swap.ts#L130)
-  - Receipt decode for the true fill: [`app/lib/onchain-swap.ts#L146`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/onchain-swap.ts#L146)
+  - Router address: [`app/lib/onchain-swap.ts#L22`](https://github.com/Venkat5599/FL/blob/main/app/lib/onchain-swap.ts#L22)
+  - `exactInputSingle` call: [`app/lib/onchain-swap.ts#L130`](https://github.com/Venkat5599/FL/blob/main/app/lib/onchain-swap.ts#L130)
+  - Receipt decode for the true fill: [`app/lib/onchain-swap.ts#L146`](https://github.com/Venkat5599/FL/blob/main/app/lib/onchain-swap.ts#L146)
 - **Hosted Trading API path (mainnet).** Quote, then swap.
-  - Quote + swap: [`app/lib/execute.ts#L119`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/execute.ts#L119)
-  - Server-side quote route (keeps the API key off the client): [`app/api/quote/route.ts#L5`](https://github.com/RomarioKavin1/kollateral/blob/main/app/api/quote/route.ts#L5)
+  - Quote + swap: [`app/lib/execute.ts#L119`](https://github.com/Venkat5599/FL/blob/main/app/lib/execute.ts#L119)
+  - Server-side quote route (keeps the API key off the client): [`app/api/quote/route.ts#L5`](https://github.com/Venkat5599/FL/blob/main/app/api/quote/route.ts#L5)
 
 Full write-up and honest developer notes: [`FEEDBACK.md`](./FEEDBACK.md).
 
@@ -61,41 +61,41 @@ Full write-up and honest developer notes: [`FEEDBACK.md`](./FEEDBACK.md).
 
 The Graph is the live data every score reasons over. We query the Uniswap v3 subgraph first and fall back to v2, for two things the product cannot work without: pricing each call at its exact posted timestamp, and pulling a caller's own swap history to run the said-vs-did check.
 
-- Gateway endpoint (subgraph by id): [`app/lib/subgraph.ts#L14`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/subgraph.ts#L14)
-- v3 price at timestamp: [`app/lib/subgraph.ts#L41`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/subgraph.ts#L41)
-- v2 fallback price: [`app/lib/subgraph.ts#L56`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/subgraph.ts#L56)
-- Wallet swap history for said-vs-did: [`app/lib/subgraph.ts`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/subgraph.ts)
+- Gateway endpoint (subgraph by id): [`app/lib/subgraph.ts#L14`](https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L14)
+- v3 price at timestamp: [`app/lib/subgraph.ts#L41`](https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L41)
+- v2 fallback price: [`app/lib/subgraph.ts#L56`](https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L56)
+- Wallet swap history for said-vs-did: [`app/lib/subgraph.ts`](https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts)
 
 ### 0G Compute (verifiable inference)
 
 The AI that reads and judges every call runs on 0G Compute, and that inference is the part we cannot fake. Each post goes to 0G's OpenAI-compatible router with `verify_tee` on and a private trust-mode header, so the model runs inside a TDX enclave and the router returns an attestation that this exact inference ran, untouched. `lib/verify.ts` does an independent, cost-free re-check by reading the provider's on-chain attestation and recovering the EIP-191 signature, so the "verified" badge is not just our word.
 
-- `verify_tee` on classification: [`app/lib/zg.ts#L164`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/zg.ts#L164)
-- `verify_tee` on 0-yap distillation: [`app/lib/zg.ts#L250`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/zg.ts#L250)
-- Private trust-mode header: [`app/lib/zg.ts#L33`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/zg.ts#L33)
-- Independent attestation re-check: [`app/lib/verify.ts`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/verify.ts)
+- `verify_tee` on classification: [`app/lib/zg.ts#L164`](https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L164)
+- `verify_tee` on 0-yap distillation: [`app/lib/zg.ts#L250`](https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L250)
+- Private trust-mode header: [`app/lib/zg.ts#L33`](https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L33)
+- Independent attestation re-check: [`app/lib/verify.ts`](https://github.com/Venkat5599/FL/blob/main/app/lib/verify.ts)
 
 ### Privy and Base
 
-- **Privy** gives each user an embedded self-custody wallet and a delegated session signer, so once auto-trading is enabled, every Follow or Fade executes server-side with no popup: [`app/lib/privy.ts`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/privy.ts).
-- **Base** is the execution chain: Base Sepolia for testnet, Base mainnet for live trades: [`app/lib/networks.ts`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/networks.ts).
+- **Privy** gives each user an embedded self-custody wallet and a delegated session signer, so once auto-trading is enabled, every Follow or Fade executes server-side with no popup: [`app/lib/privy.ts`](https://github.com/Venkat5599/FL/blob/main/app/lib/privy.ts).
+- **Base** is the execution chain: Base Sepolia for testnet, Base mainnet for live trades: [`app/lib/networks.ts`](https://github.com/Venkat5599/FL/blob/main/app/lib/networks.ts).
 
 ---
 
 ## The browser extension
 
-A separate repo carries the record onto X itself: **[github.com/RomarioKavin1/kollateral-extension](https://github.com/RomarioKavin1/kollateral-extension)**.
+A separate repo carries the record onto X itself: **[github.com/Venkat5599/gigabags-extension](https://github.com/Venkat5599/gigabags-extension)**.
 
 It is a Manifest V3 content script with no backend of its own. It reads a CORS-open `/api/creator/[handle]` endpoint on the deployed app (the same Turso-backed data) and injects a card into any X profile with that creator's headline P&L, signal and scored-call counts, contradiction rate, TEE-verified count, and a link to the full dossier. The card styles itself to match X's Default, Dim, and Lights-out themes.
 
-Install guide, screenshots, and a one-click download live at [kollateral.vercel.app/extension](https://kollateral.vercel.app/extension). No build step: clone, open `chrome://extensions`, enable Developer mode, Load unpacked.
+Install guide, screenshots, and a one-click download live at [gigabags.vercel.app/extension](https://gigabags.vercel.app/extension). No build step: clone, open `chrome://extensions`, enable Developer mode, Load unpacked.
 
 ---
 
 ## Repository layout
 
 ```
-kollateral/
+gigabags/
 ├── app/                    Next.js 16 App Router application (see app/README.md for full dev docs)
 │   ├── app/                routes + API handlers
 │   ├── lib/                integrations: zg.ts (0G), subgraph.ts (Graph), onchain-swap.ts + execute.ts (Uniswap), privy.ts, networks.ts, db.ts

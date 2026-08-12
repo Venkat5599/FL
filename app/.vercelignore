@@ -8,9 +8,9 @@ node_modules
 .git
 
 # Runtime SQLite DB + write-ahead artifacts (regenerated from the seed at runtime)
-kollateral.db
-kollateral.db-shm
-kollateral.db-wal
+gigabags.db
+gigabags.db-shm
+gigabags.db-wal
 
 # Stale seed WAL/shm sidecars — only the checkpointed seed/demo.db is needed
 seed/demo.db-wal

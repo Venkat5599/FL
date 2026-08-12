@@ -1,5 +1,5 @@
-// KOLlateral — X/Twitter profile content script
-// Injects a "◇ KOLlateral" button + compact analytics card on profile pages.
+// GigaBags — X/Twitter profile content script
+// Injects a "◇ GigaBags" button + compact analytics card on profile pages.
 "use strict";
 
 (() => {
@@ -9,10 +9,10 @@
   // The deployed app shares one Turso DB with the local live indexer, so this
   // works out of the box. Swap to localhost if you're running the app locally:
   //   const BASE = "http://localhost:3000";
-  const BASE = "https://kollateral.vercel.app";
+  const BASE = "https://gigabags.vercel.app";
 
-  const LOG = (...args) => console.log("[KOLlateral]", ...args);
-  const WARN = (...args) => console.warn("[KOLlateral]", ...args);
+  const LOG = (...args) => console.log("[GigaBags]", ...args);
+  const WARN = (...args) => console.warn("[GigaBags]", ...args);
 
   // Route segments on x.com/twitter.com that are NOT profile handles.
   const RESERVED = new Set([
@@ -296,7 +296,7 @@
     return `
       <div class="kol-card-head">
         <span class="kol-mark">◇</span>
-        <span class="kol-brand">KOLlateral</span>
+        <span class="kol-brand">GigaBags</span>
         <button type="button" class="kol-dismiss" title="Hide" aria-label="Hide">×</button>
       </div>`;
   }
@@ -315,7 +315,7 @@
     return `
       ${renderHeader()}
       <div class="kol-body">
-        <p class="kol-msg">Couldn't reach KOLlateral. Is the API running?</p>
+        <p class="kol-msg">Couldn't reach GigaBags. Is the API running?</p>
         <div class="kol-actions">
           <button type="button" class="kol-retry kol-linkbtn">retry</button>
         </div>
@@ -326,7 +326,7 @@
     return `
       ${renderHeader()}
       <div class="kol-body">
-        <p class="kol-msg">@${esc(data.handle)} isn't on KOLlateral yet.</p>
+        <p class="kol-msg">@${esc(data.handle)} isn't on GigaBags yet.</p>
         <div class="kol-actions">
           <a href="#" class="kol-open kol-linkbtn">open dossier ↗</a>
         </div>

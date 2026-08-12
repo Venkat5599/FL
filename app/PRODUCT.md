@@ -1,4 +1,4 @@
-# KOLlateral — Product context
+# GigaBags — Product context
 
 **Register:** brand (landing) + product (app UI). The landing is the design; the app is a forensic trading terminal.
 

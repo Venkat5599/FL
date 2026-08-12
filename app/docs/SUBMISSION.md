@@ -1,4 +1,4 @@
-# KOLlateral - submission answers
+# GigaBags - submission answers
 
 ## Short description (max 100 characters)
 
@@ -6,7 +6,7 @@ The accountability layer for crypto influencers: build a verifiable record, back
 
 ## Description
 
-Crypto influencers operate with almost no accountability. They post hundreds of "calls" a week, delete the ones that lose, and there is no shared record of whether following them ever made money. KOLlateral fixes both sides of that with one thing: a public, verifiable track record.
+Crypto influencers operate with almost no accountability. They post hundreds of "calls" a week, delete the ones that lose, and there is no shared record of whether following them ever made money. GigaBags fixes both sides of that with one thing: a public, verifiable track record.
 
 For a caller who is actually good, that record is an asset they own. Every explicit call they make in public becomes a structured signal (asset, direction, target, confidence) and gets priced against real DEX history, so their edge shows up as numbers they can point to: what following them returned versus just holding ETH. Losing calls are archived and flagged in red instead of disappearing. Each call is checked against the caller's own on-chain wallet, so "said accumulate, sold four hours later" is a contradiction with a transaction hash attached. And every score is produced by AI inference running inside a verifiable enclave, so the record holds up even against us.
 
@@ -28,17 +28,17 @@ There is also a Chrome/MV3 browser extension that carries the record onto X itse
 
 # Prize applications
 
-Code links point at `github.com/RomarioKavin1/kollateral` (app lives under `app/`); push `main` before submitting so the line numbers resolve.
+Code links point at `github.com/Venkat5599/FL` (app lives under `app/`); push `main` before submitting so the line numbers resolve.
 
 ## The Graph - $15,000
 
-**Why we're applicable:** The Graph is KOLlateral's live source of on-chain data. An AI and forensic layer reads the Uniswap v2 and v3 subgraphs to price every influencer call at its exact posted timestamp and to pull each caller's own swap history, then reasons over that live data to score their record and flag said-versus-did contradictions. Nothing is mocked, and without the subgraphs there is no price and no wallet check.
+**Why we're applicable:** The Graph is GigaBags's live source of on-chain data. An AI and forensic layer reads the Uniswap v2 and v3 subgraphs to price every influencer call at its exact posted timestamp and to pull each caller's own swap history, then reasons over that live data to score their record and flag said-versus-did contradictions. Nothing is mocked, and without the subgraphs there is no price and no wallet check.
 
 **Line of code:**
-- Pricing, v3 then v2 fallback: https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/subgraph.ts#L41
-- Wallet swap history for the said-versus-did check: https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/subgraph.ts#L114
-- Gateway endpoint (by subgraph id): https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/subgraph.ts#L14
-- Consumed by the scoring layer: https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/graph.ts#L17
+- Pricing, v3 then v2 fallback: https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L41
+- Wallet swap history for the said-versus-did check: https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L114
+- Gateway endpoint (by subgraph id): https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L14
+- Consumed by the scoring layer: https://github.com/Venkat5599/FL/blob/main/app/lib/graph.ts#L17
 
 **Ease of use (1-10):** 8
 
@@ -46,12 +46,12 @@ Code links point at `github.com/RomarioKavin1/kollateral` (app lives under `app/
 
 ## Uniswap Foundation - $10,000
 
-**Why we're applicable:** Uniswap is what turns a verdict into a position. The AI scores an influencer's record, and Uniswap is the layer that lets you copy the honest callers or fade the rest in a single tap, so KOLlateral is an execution loop driven by AI signals rather than a scoreboard with a swap bolted on. We integrated it two ways for real coverage: the hosted Trading API (quote then swap) for routing on Base mainnet, and, because that API does not index Base Sepolia, direct `SwapRouter02.exactInputSingle` calls against the live WETH/USDC v3 pools on testnet, with the true output amount decoded from the swap receipt so both paths settle as genuine fills. Paired with Privy delegated signing it behaves like an agent acting on a signal: authorize once, and every Follow or Fade after that executes on-chain with no prompt.
+**Why we're applicable:** Uniswap is what turns a verdict into a position. The AI scores an influencer's record, and Uniswap is the layer that lets you copy the honest callers or fade the rest in a single tap, so GigaBags is an execution loop driven by AI signals rather than a scoreboard with a swap bolted on. We integrated it two ways for real coverage: the hosted Trading API (quote then swap) for routing on Base mainnet, and, because that API does not index Base Sepolia, direct `SwapRouter02.exactInputSingle` calls against the live WETH/USDC v3 pools on testnet, with the true output amount decoded from the swap receipt so both paths settle as genuine fills. Paired with Privy delegated signing it behaves like an agent acting on a signal: authorize once, and every Follow or Fade after that executes on-chain with no prompt.
 
 **Line of code:**
-- Trading API quote + swap (mainnet): https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/execute.ts#L119
-- Trading API behind the manual swap ticket: https://github.com/RomarioKavin1/kollateral/blob/main/app/api/quote/route.ts#L5
-- Direct SwapRouter02 exactInputSingle + receipt decode (testnet): https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/onchain-swap.ts#L130
+- Trading API quote + swap (mainnet): https://github.com/Venkat5599/FL/blob/main/app/lib/execute.ts#L119
+- Trading API behind the manual swap ticket: https://github.com/Venkat5599/FL/blob/main/app/api/quote/route.ts#L5
+- Direct SwapRouter02 exactInputSingle + receipt decode (testnet): https://github.com/Venkat5599/FL/blob/main/app/lib/onchain-swap.ts#L130
 
 **Ease of use (1-10):** 6
 
@@ -62,10 +62,10 @@ Code links point at `github.com/RomarioKavin1/kollateral` (app lives under `app/
 **Why we're applicable:** The AI that classifies every post into a structured trade signal, and the 0-yap distillation, both run on 0G Compute with `verify_tee` enabled, so each inference executes in a TEE and returns an attestation. That verifiable inference is the product's core claim: a caller's score is provably the model's output and was not edited by anyone, including us.
 
 **Line of code:**
-- `verify_tee` on classification: https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/zg.ts#L164
-- `verify_tee` on the 0-yap distillation: https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/zg.ts#L250
-- Private trust-mode header (pins a TEE provider): https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/zg.ts#L33
-- Provider attestation from the 0G registry (independent evidence): https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/zg.ts#L109
+- `verify_tee` on classification: https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L164
+- `verify_tee` on the 0-yap distillation: https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L250
+- Private trust-mode header (pins a TEE provider): https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L33
+- Provider attestation from the 0G registry (independent evidence): https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L109
 
 **Ease of use (1-10):** 6
 

@@ -1,4 +1,4 @@
-# KOLlateral
+# GigaBags
 
 Forensic accountability and copy/fade trading for crypto influencers ("finfluencers"). Built for ETHGlobal Lisbon 2026 (0G, Uniswap, The Graph tracks).
 
@@ -6,7 +6,7 @@ Forensic accountability and copy/fade trading for crypto influencers ("finfluenc
 
 Crypto influencers make public trading calls, then quietly delete the ones that go wrong. There is no unified way to see a caller's real track record, no way to check whether their own wallet actually did what they told followers to do, and no vetted way to trade with (or against) them.
 
-KOLlateral reads an influencer's public X/Twitter calls, classifies each one into a structured trade signal via verifiable AI inference on 0G Compute, prices and backtests it against real on-chain market data from The Graph, cross-references the influencer's own wallet for "said vs. did" contradictions, and lets a user copy the honest ones or fade the rest with one-click on-chain trades on Base.
+GigaBags reads an influencer's public X/Twitter calls, classifies each one into a structured trade signal via verifiable AI inference on 0G Compute, prices and backtests it against real on-chain market data from The Graph, cross-references the influencer's own wallet for "said vs. did" contradictions, and lets a user copy the honest ones or fade the rest with one-click on-chain trades on Base.
 
 ## Key features
 
@@ -22,7 +22,7 @@ KOLlateral reads an influencer's public X/Twitter calls, classifies each one int
 
 ## Sponsor integrations
 
-**0G Compute**: All post classification and 0-yap distillation runs as verifiable inference against the 0G router (`lib/zg.ts`), pinned to a TEE-backed provider (`X-0G-Provider-Trust-Mode: private`) with `verify_tee: true` on every call. The router performs on-chain TEE signature verification and returns the result inline; `lib/verify.ts` additionally does an independent, cost-free re-check by reading the provider's on-chain attestation record and recovering the EIP-191 signature itself, so the "verified" badge isn't just KOLlateral's word. Runs on 0G mainnet.
+**0G Compute**: All post classification and 0-yap distillation runs as verifiable inference against the 0G router (`lib/zg.ts`), pinned to a TEE-backed provider (`X-0G-Provider-Trust-Mode: private`) with `verify_tee: true` on every call. The router performs on-chain TEE signature verification and returns the result inline; `lib/verify.ts` additionally does an independent, cost-free re-check by reading the provider's on-chain attestation record and recovering the EIP-191 signature itself, so the "verified" badge isn't just GigaBags's word. Runs on 0G mainnet.
 
 **The Graph**: Pricing and wallet forensics are built entirely on The Graph's decentralized network (`lib/subgraph.ts`), composing the Uniswap v3 subgraph (hourly USD-native prices, preferred) with the Uniswap v2 subgraph as a fallback for tokens with only v2 liquidity. The same v3 subgraph's `swaps` data powers Said-vs-Did: querying an influencer's wallet for its own on-chain sells to compare against what they publicly called.
 
@@ -63,7 +63,7 @@ Create a `.env` file in the project root. None of the values below are checked i
 
 | Variable | Purpose |
 |---|---|
-| `DB_PATH` | Path to the local SQLite database file (defaults to `./kollateral.db`); used when the Turso vars are unset |
+| `DB_PATH` | Path to the local SQLite database file (defaults to `./gigabags.db`); used when the Turso vars are unset |
 | `TURSO_DATABASE_URL` | Hosted Turso database URL; when set, the app and scripts read/write this shared database instead of the local file |
 | `TURSO_AUTH_TOKEN` | Auth token for the Turso database |
 | `ZG_API_KEY` | API key for the 0G Compute router |
@@ -92,7 +92,7 @@ Other scripts: `npm run build`, `npm run start`, `npm run lint`, `npm run test` 
 
 ### Seed / demo data
 
-A committed SQLite snapshot at `seed/demo.db` lets the app render real data on clone with no API keys, built from live sources (see `seed/README.md`): a currently active caller scraped and classified live, plus a Said-vs-Did centerpiece built from a real, publicly attributed wallet and its real on-chain sells. Point `DB_PATH` at `seed/demo.db` (or copy it to the project root as `kollateral.db`) to run against it.
+A committed SQLite snapshot at `seed/demo.db` lets the app render real data on clone with no API keys, built from live sources (see `seed/README.md`): a currently active caller scraped and classified live, plus a Said-vs-Did centerpiece built from a real, publicly attributed wallet and its real on-chain sells. Point `DB_PATH` at `seed/demo.db` (or copy it to the project root as `gigabags.db`) to run against it.
 
 ### The data pipeline
 

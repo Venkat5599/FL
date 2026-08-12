@@ -293,7 +293,7 @@ function VaultMenu({
   const [pinned, setPinned] = useState<string | null>(null);
   useEffect(() => {
     try {
-      setPinned(localStorage.getItem("kollateral.pinnedToken"));
+      setPinned(localStorage.getItem("gigabags.pinnedToken"));
     } catch {
       /* ignore */
     }
@@ -301,7 +301,7 @@ function VaultMenu({
   const pin = (sym: string) => {
     setPinned(sym);
     try {
-      localStorage.setItem("kollateral.pinnedToken", sym);
+      localStorage.setItem("gigabags.pinnedToken", sym);
     } catch {
       /* ignore */
     }

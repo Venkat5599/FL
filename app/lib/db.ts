@@ -7,14 +7,14 @@ import Database from "libsql";
 import { readFileSync, existsSync, copyFileSync } from "fs";
 import path from "path";
 
-// Local-file fallback (no Turso configured). In dev this is ./kollateral.db;
+// Local-file fallback (no Turso configured). In dev this is ./gigabags.db;
 // on Vercel without Turso it's a per-instance /tmp copy of the committed seed
 // (serverless FS is read-only except /tmp).
 function localDbPath(): string {
   const envPath = process.env.DB_PATH;
 
   if (process.env.VERCEL && !(envPath && envPath.startsWith("/tmp"))) {
-    const runtimePath = "/tmp/kollateral.db";
+    const runtimePath = "/tmp/gigabags.db";
     if (!existsSync(runtimePath)) {
       const seedPath = envPath ?? path.join(process.cwd(), "seed/demo.db");
       copyFileSync(seedPath, runtimePath);
@@ -22,7 +22,7 @@ function localDbPath(): string {
     return runtimePath;
   }
 
-  return envPath ?? "./kollateral.db";
+  return envPath ?? "./gigabags.db";
 }
 
 let db: InstanceType<typeof Database> | null = null;

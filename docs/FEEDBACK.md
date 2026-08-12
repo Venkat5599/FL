@@ -1,6 +1,6 @@
 # Uniswap feedback has moved
 
-The canonical Uniswap developer feedback for KOLlateral now lives at the repository root:
+The canonical Uniswap developer feedback for GigaBags now lives at the repository root:
 
 **[../FEEDBACK.md](../FEEDBACK.md)**
 

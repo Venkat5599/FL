@@ -1,4 +1,4 @@
-# KOLlateral — Design system
+# GigaBags — Design system
 
 ## Aesthetic: dither / 1-bit forensic monochrome
 Ordered (Bayer) dithering is the surface voice — grayscale rendered as dot/threshold patterns, like an e-ink surveillance readout or an oscilloscope. Dither is texture, not decoration: it appears in the hero shader, chart fills, dividers, hover states. Dark theme (a dim room, 2am, watching the tape).

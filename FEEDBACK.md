@@ -1,24 +1,24 @@
 # Uniswap developer feedback
 
-Project: **KOLlateral** (ETHGlobal Lisbon 2026). Repo: https://github.com/RomarioKavin1/kollateral · Live app: https://kollateral.vercel.app
+Project: **GigaBags** (ETHGlobal Lisbon 2026). Repo: https://github.com/Venkat5599/FL · Live app: https://gigabags.vercel.app
 
 This is the honest developer account of integrating Uniswap, with the exact contracts and lines of code so the integration can be verified.
 
 ## What we built with Uniswap
 
-Uniswap is KOLlateral's execution layer. The app scores a crypto influencer's public calls, and Uniswap is what lets a user copy the honest callers or fade the rest in a single tap. So the product is an execution loop driven by AI signals, not a scoreboard with a swap bolted on. Once a user delegates a Privy session signer, every Follow or Fade after that executes on-chain with no wallet popup.
+Uniswap is GigaBags's execution layer. The app scores a crypto influencer's public calls, and Uniswap is what lets a user copy the honest callers or fade the rest in a single tap. So the product is an execution loop driven by AI signals, not a scoreboard with a swap bolted on. Once a user delegates a Privy session signer, every Follow or Fade after that executes on-chain with no wallet popup.
 
 We integrated Uniswap two ways to get real coverage on both networks:
 
 **1. Hosted Trading API (Base mainnet).** Quote, then swap.
-- Quote and swap calls: [`app/lib/execute.ts#L119`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/execute.ts#L119)
-- Server-side quote route, so `UNISWAP_API_KEY` never reaches the client: [`app/api/quote/route.ts#L5`](https://github.com/RomarioKavin1/kollateral/blob/main/app/api/quote/route.ts#L5)
+- Quote and swap calls: [`app/lib/execute.ts#L119`](https://github.com/Venkat5599/FL/blob/main/app/lib/execute.ts#L119)
+- Server-side quote route, so `UNISWAP_API_KEY` never reaches the client: [`app/api/quote/route.ts#L5`](https://github.com/Venkat5599/FL/blob/main/app/api/quote/route.ts#L5)
 - Endpoint: `https://trade-api.gateway.uniswap.org/v1`
 
 **2. Direct SwapRouter02 (Base Sepolia).** The hosted Trading API does not index Base Sepolia, so we located the deployed WETH/USDC v3 pool on-chain and call `SwapRouter02.exactInputSingle` ourselves, then decode the ERC-20 `Transfer` out of the receipt to record the true output amount instead of a nominal one.
-- Router address: [`app/lib/onchain-swap.ts#L22`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/onchain-swap.ts#L22)
-- `exactInputSingle` call: [`app/lib/onchain-swap.ts#L130`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/onchain-swap.ts#L130)
-- Receipt decode for the real fill: [`app/lib/onchain-swap.ts#L146`](https://github.com/RomarioKavin1/kollateral/blob/main/app/lib/onchain-swap.ts#L146)
+- Router address: [`app/lib/onchain-swap.ts#L22`](https://github.com/Venkat5599/FL/blob/main/app/lib/onchain-swap.ts#L22)
+- `exactInputSingle` call: [`app/lib/onchain-swap.ts#L130`](https://github.com/Venkat5599/FL/blob/main/app/lib/onchain-swap.ts#L130)
+- Receipt decode for the real fill: [`app/lib/onchain-swap.ts#L146`](https://github.com/Venkat5599/FL/blob/main/app/lib/onchain-swap.ts#L146)
 
 ## Contracts and addresses
 
