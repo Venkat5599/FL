@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "KOLlateral",
+  "version": "1.0.0",
+  "description": "See a crypto influencer's KOLlateral accountability score right on their X profile.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "KOLlateral",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://kollateral.vercel.app/*",
+    "https://app-opal-omega-44.vercel.app/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://x.com/*", "*://twitter.com/*"],
+      "css": ["content.css"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
