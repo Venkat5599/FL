@@ -236,7 +236,7 @@ export function CallTweet({
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
                   <span className="label" style={{ color: "var(--faint)" }}>noise removed · distilled by</span>
-                  <PoweredBy sponsor="0g" label={null} size={0.9} />
+                  <PoweredBy protocol="fcc" label={null} size={0.9} />
                   {activeYap.teeVerified && <span className="label" style={{ color: "var(--gain)" }}>✓ verifiable</span>}
                 </div>
               </>
@@ -356,7 +356,7 @@ export function CallTweet({
                 <span style={{ fontFamily: "var(--font-mono)", color: "var(--muted)" }}>x_0g_trace.tee_verified</span> is 0G&apos;s answer, not ours.
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 2 }}>
-                <PoweredBy sponsor="0g" />
+                <PoweredBy protocol="fcc" />
               </div>
             </div>
           </div>
@@ -403,7 +403,7 @@ export function CallTweet({
                 </a>
               )}
               {/* routing through Uniswap — surface it while the swap is in flight */}
-              {tradeStatus.pending && <PoweredBy sponsor="uniswap" label="via" size={0.85} />}
+              {tradeStatus.pending && <PoweredBy protocol="fxrp" label="via" size={0.85} />}
             </span>
           ) : (
             !connected && <span className="label" style={{ color: "var(--faint)" }}>log in to trade</span>

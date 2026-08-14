@@ -56,3 +56,7 @@ npm-debug.log*
 coverage/
 .idea/
 .vscode/
+
+# local working db (seeded copy of seed/demo.db)
+app/tape.db
+app/gigabags.db

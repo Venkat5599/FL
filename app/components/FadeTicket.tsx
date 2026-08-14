@@ -405,7 +405,7 @@ export function FadeTicket({ call }: { call: DossierCall }) {
       )}
 
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
-        <PoweredBy sponsor="uniswap" />
+        <PoweredBy protocol="fxrp" />
       </div>
     </div>
   );

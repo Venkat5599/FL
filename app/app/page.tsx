@@ -30,7 +30,8 @@ const EVIDENCE = [
   },
 ];
 
-type Sponsor = "0g" | "graph" | "uniswap";
+// The four Flare protocols the product actually runs on.
+type Sponsor = "fdc" | "fcc" | "ftso" | "fxrp";
 
 // Hovering a sponsor logo takes over the hero (heading + line + eyebrow) with
 // why that layer is load-bearing for the product, not decoration. Concrete,
@@ -47,23 +48,29 @@ const DEFAULT: HeroCopy = {
     "Forensic accountability for crypto influencers. Backtest their calls, catch their wallets in the act, and fade the noise, automatically.",
 };
 const SPONSOR_COPY: Record<Sponsor, HeroCopy> = {
-  "0g": {
-    heading: "NO HANDS IN THE MIDDLE.",
-    eyebrow: "// why verifiable inference",
+  fdc: {
+    heading: "DELETING IT WON'T HELP.",
+    eyebrow: "// why attested evidence",
     body:
-      "Every call is read by AI inference running inside a verifiable secure enclave and attested on-chain. So the verdict between their tweet and your screen is provably untampered: no one, not even us, can quietly edit a signal in the middle.",
+      "Every call is proven to exist by the Flare Data Connector before it is scored — a Merkle proof against a round Flare's data providers signed. Delete the post and the record stands. Edit it and the edit shows. The evidence stops depending on us having screenshotted it.",
   },
-  graph: {
-    heading: "RECEIPTS, NOT RUMORS.",
-    eyebrow: "// why indexed on-chain data",
+  fcc: {
+    heading: "A SCORE YOU CAN'T FARM.",
+    eyebrow: "// why confidential compute",
     body:
-      "Every call gets priced and every wallet gets cross-examined against fully-indexed on-chain history. It is what turns “said accumulate, sold four hours later” from a rumor into a receipt with a transaction hash.",
+      "The ranking runs inside a hardware enclave whose weights are never published — because a leaderboard whose formula is public gets optimised against instead of satisfied. Inputs are public and attested, the verdict is public and signed, the function is secret.",
   },
-  uniswap: {
-    heading: "VERDICTS YOU CAN TRADE.",
-    eyebrow: "// why deep liquidity",
+  ftso: {
+    heading: "PRICED BY THE CHAIN.",
+    eyebrow: "// why an oracle, not an API",
     body:
-      "A verdict you cannot act on is just an opinion. Deep, permissionless liquidity is what turns “fade this caller” into a real on-chain position: copy the honest, fade the rest, in one click.",
+      "Entry and settlement marks come from FTSOv2, read on-chain and stamped with the oracle's own timestamp. Nobody — us included — picks the price a call is judged against, and a stale feed is refused rather than quietly used.",
+  },
+  fxrp: {
+    heading: "PUT XRP TO WORK.",
+    eyebrow: "// why FAssets",
+    body:
+      "A verdict you cannot act on is just an opinion. FXRP brings XRP — the largest asset with no native smart contracts — onto Flare as a real ERC-20, so following a proven caller is a position you actually hold, and always redeemable back to XRP.",
   },
 };
 
@@ -134,7 +141,7 @@ export default function HomePage() {
               color: "var(--ink)",
             }}
           >
-            <span className="kol">KOL</span>LATERAL
+            <span className="kol">TA</span>PE
             <span className="flick" style={{ color: "var(--ink)" }}>
               _
             </span>
@@ -213,45 +220,30 @@ export default function HomePage() {
                 flexWrap: "wrap",
               }}
             >
-              <span
-                className="sponsor"
-                title="0G"
-                onMouseEnter={() => setHovered("0g")}
-                onMouseLeave={() => setHovered(null)}
-                style={{
-                  width: 92,
-                  height: 44,
-                  cursor: "pointer",
-                  WebkitMaskImage: "url(/logos/0g.png)",
-                  maskImage: "url(/logos/0g.png)",
-                }}
-              />
-              <span
-                className="sponsor"
-                title="The Graph"
-                onMouseEnter={() => setHovered("graph")}
-                onMouseLeave={() => setHovered(null)}
-                style={{
-                  width: 54,
-                  height: 54,
-                  cursor: "pointer",
-                  WebkitMaskImage: "url(/logos/the-graph.svg)",
-                  maskImage: "url(/logos/the-graph.svg)",
-                }}
-              />
-              <span
-                className="sponsor"
-                title="Uniswap"
-                onMouseEnter={() => setHovered("uniswap")}
-                onMouseLeave={() => setHovered(null)}
-                style={{
-                  width: 52,
-                  height: 54,
-                  cursor: "pointer",
-                  WebkitMaskImage: "url(/logos/uniswap.png)",
-                  maskImage: "url(/logos/uniswap.png)",
-                }}
-              />
+              {([
+                ["fdc", "FDC"],
+                ["fcc", "FCC"],
+                ["ftso", "FTSOv2"],
+                ["fxrp", "FXRP"],
+              ] as const).map(([key, label]) => (
+                <span
+                  key={key}
+                  className="sponsor-word"
+                  title={label}
+                  onMouseEnter={() => setHovered(key)}
+                  onMouseLeave={() => setHovered(null)}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 15,
+                    letterSpacing: "0.08em",
+                    cursor: "pointer",
+                    color: hovered === key ? "var(--ink)" : "var(--faint)",
+                    transition: "color .2s",
+                  }}
+                >
+                  {label}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -464,7 +456,7 @@ export default function HomePage() {
               performance — said-vs-did, PnL over time.
             </p>
             <div style={{ marginTop: "auto", paddingTop: 18 }}>
-              <PoweredBy sponsor="graph" />
+              <PoweredBy protocol="ftso" />
             </div>
           </div>
 
@@ -500,7 +492,7 @@ export default function HomePage() {
               leaderboard — with TEE-verified AI inference behind every score.
             </p>
             <div style={{ marginTop: "auto", paddingTop: 18 }}>
-              <PoweredBy sponsor="0g" />
+              <PoweredBy protocol="fcc" />
             </div>
           </div>
 
@@ -560,7 +552,7 @@ export default function HomePage() {
                   auto-executed from a self-custody vault, capped per creator.
                 </p>
                 <div style={{ marginTop: "auto", paddingTop: 18 }}>
-                  <PoweredBy sponsor="uniswap" />
+                  <PoweredBy protocol="fxrp" />
                 </div>
               </div>
               <div
@@ -630,7 +622,7 @@ export default function HomePage() {
         }}
       >
         <span className="pixel" style={{ color: "var(--faint)" }}>
-          <span className="kol">KOL</span>LATERAL
+          <span className="kol">TA</span>PE
         </span>
         <span className="label">
           the market remembers · numbers and citations, zero adjectives

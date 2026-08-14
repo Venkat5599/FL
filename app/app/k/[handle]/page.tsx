@@ -323,7 +323,7 @@ export default function DossierPage() {
             <div className="panel rise" style={{ padding: "18px 18px 8px", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
                 <div className="label" style={{ marginBottom: 0 }}>// equity curve · $1,000 per call vs holding ETH</div>
-                <PoweredBy sponsor="graph" label="pricing via" />
+                <PoweredBy protocol="ftso" label="pricing via" />
               </div>
               <EquityCurveChart data={curve} positive={dossier.stats.totalPnl >= 0} />
             </div>

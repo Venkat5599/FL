@@ -280,7 +280,7 @@ export default function PortfolioPage() {
               <section style={{ marginTop: 52 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                   <div className="label">// ledger · every fill</div>
-                  <PoweredBy sponsor="uniswap" label="executed via" size={0.85} />
+                  <PoweredBy protocol="fxrp" label="settled in" size={0.85} />
                 </div>
 
                 {data.trades.length === 0 ? (
