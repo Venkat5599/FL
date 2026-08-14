@@ -25,18 +25,22 @@ const viemChain = (n: Network) => (n === "mainnet" ? base : baseSepolia);
 // Tokens surfaced in the vault menu per network (native ETH + the assets that
 // matter for trading on that chain). address:null = native.
 type BalToken = { symbol: string; address: string | null; decimals: number };
+// Balances shown in the header, per network.
+//
+// Coston2 addresses resolved on-chain, not copied from a doc:
+//   ContractRegistry -> AssetManagerFXRP -> fAsset()
+// FXRP reports 6 decimals (XRPL drops), NOT 18 — assuming 18 here would misread a
+// balance by a factor of a trillion. On testnet the FAsset is named FTestXRP.
 const BALANCE_TOKENS: Record<Network, BalToken[]> = {
   testnet: [
-    { symbol: "ETH", address: null, decimals: 18 },
-    { symbol: "USDC", address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", decimals: 6 },
-    { symbol: "WETH", address: "0x4200000000000000000000000000000000000006", decimals: 18 },
+    { symbol: "C2FLR", address: null, decimals: 18 },
+    { symbol: "FXRP", address: "0x0b6A3645c240605887a5532109323A3E12273dc7", decimals: 6 },
   ],
   mainnet: [
-    { symbol: "ETH", address: null, decimals: 18 },
-    { symbol: "WETH", address: "0x4200000000000000000000000000000000000006", decimals: 18 },
-    { symbol: "USDC", address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", decimals: 6 },
-    { symbol: "cbBTC", address: "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf", decimals: 8 },
-    { symbol: "DEGEN", address: "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed", decimals: 18 },
+    { symbol: "FLR", address: null, decimals: 18 },
+    // Resolved at runtime through ContractRegistry.getAssetManagerFXRP() -> fAsset();
+    // left null here rather than hardcoding a mainnet address we have not verified.
+    { symbol: "FXRP", address: null, decimals: 6 },
   ],
 };
 
@@ -112,7 +116,7 @@ export function Header() {
         /* clipboard may be blocked; the address is still shown in the header */
       }
       window.open("https://faucet.circle.com/", "_blank", "noopener,noreferrer");
-      setTopUpMsg("vault address copied — get testnet USDC (+ Base Sepolia ETH for gas) from the faucet, then send to the vault");
+      setTopUpMsg("vault address copied — get testnet FXRP (+ C2FLR for gas) from faucet.flare.network/coston2, then send to the vault");
       return;
     }
     // Mainnet: Privy's fiat/transfer funding. Guard the promise so a disabled
@@ -217,7 +221,7 @@ function NetworkToggle({ network, onChange }: { network: Network; onChange: (n: 
             <button
               key={n}
               onClick={() => onChange(n)}
-              title={n === "mainnet" ? "Live funds — real Base mainnet execution" : "Test funds — Base Sepolia"}
+              title={n === "mainnet" ? "Live funds — real Base mainnet execution" : "Test funds — Coston2"}
               style={{
                 fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase",
                 padding: "5px 11px", border: 0, cursor: "pointer",
@@ -307,7 +311,7 @@ function VaultMenu({
     }
   };
 
-  const defaultPin = network === "testnet" ? "USDC" : "ETH";
+  const defaultPin = "FXRP";
   const pinnedRow = rows.find((r) => r.symbol === (pinned ?? defaultPin)) ?? rows[0];
   const fmt = (n: number) => (n >= 1 ? n.toFixed(2) : n.toFixed(4));
 

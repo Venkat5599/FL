@@ -254,7 +254,7 @@ export default function TerminalPage() {
           <div className="term-feed-head" style={{ flexWrap: "wrap", rowGap: 12 }}>
             <button
               onClick={() => setYapMode((v) => !v)}
-              title="0-yap: strip the noise, show only 0G-distilled trade logic"
+              title="0-yap: strip the noise, show only the enclave-distilled trade logic"
               aria-pressed={yapMode}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 10, cursor: "pointer", alignSelf: "center",
@@ -274,14 +274,17 @@ export default function TerminalPage() {
                   background: yapMode ? "var(--bg)" : "var(--dark)",
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/logos/0g-only0.png"
-                  alt="0G"
-                  width={17}
-                  height={17}
-                  style={{ opacity: yapMode ? 1 : 0.9 }}
-                />
+                <span
+                  aria-label="Flare Confidential Compute"
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    letterSpacing: "0.06em",
+                    opacity: yapMode ? 1 : 0.9,
+                  }}
+                >
+                  FCC
+                </span>
               </span>
               <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.2 }}>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 13, letterSpacing: "0.02em" }}>
@@ -295,7 +298,7 @@ export default function TerminalPage() {
                     color: yapMode ? "color-mix(in oklch, var(--bg) 65%, transparent)" : "var(--muted)",
                   }}
                 >
-                  {yapMode ? "noise off · powered by 0G" : "powered by 0G — strip the noise"}
+                  {yapMode ? "noise off · distilled in-enclave" : "distilled in-enclave — strip the noise"}
                 </span>
               </span>
             </button>

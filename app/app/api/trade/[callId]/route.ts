@@ -63,7 +63,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ callId:
     user.userId,
   );
 
-  // Resolve the effective quick-trade amount (USDC): a per-creator override
+  // Resolve the effective quick-trade amount (FXRP): a per-creator override
   // wins over the user's global amount, which falls back to the default.
   const existing = db
     .prepare("SELECT id, cap_value FROM allocations WHERE user_id=? AND influencer_id=? AND active=1")
@@ -122,7 +122,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ callId:
     creatorHandle: call.handle,
     mode,
     planned,
-    sizeUsd, // the resolved quick-trade amount (USDC)
+    sizeUsd, // the resolved quick-trade amount (FXRP)
     entryPriceUsd: call.latest_price ?? undefined, // for converting the sell leg to WETH
   });
 

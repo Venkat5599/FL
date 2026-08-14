@@ -24,12 +24,12 @@ interface TradeRow {
 
 const isExecuted = (t: TradeRow) => t.status === "executed" || t.status === "sent" || !!t.tx_hash;
 
-// The USDC that actually moved on an executed trade: a buy spends USDC (input),
-// a sell receives USDC (output). Failed trades moved nothing.
+// The FXRP that actually moved on an executed trade: a buy spends FXRP (input),
+// a sell receives FXRP (output). Failed trades moved nothing.
 function usdcLeg(t: TradeRow): number {
   if (!isExecuted(t)) return 0;
-  if (t.in_symbol === "USDC" && t.in_amount != null) return t.in_amount;
-  if (t.out_symbol === "USDC" && t.out_amount != null) return t.out_amount;
+  if (t.in_symbol === "FXRP" && t.in_amount != null) return t.in_amount;
+  if (t.out_symbol === "FXRP" && t.out_amount != null) return t.out_amount;
   return 0;
 }
 
@@ -55,7 +55,7 @@ export async function GET(req: Request) {
   const pending = trades.filter((t) => t.status === "pending").length;
   const copies = trades.filter((t) => t.mode === "copy").length;
   const fades = trades.filter((t) => t.mode === "fade").length;
-  // Real USDC deployed across executed trades only (not the nominal cap).
+  // Real FXRP deployed across executed trades only (not the nominal cap).
   const deployedUsdc = executedTrades.reduce((s, t) => s + usdcLeg(t), 0);
   const totalPnlUsd = executedTrades.reduce((s, t) => s + (t.yield_usd ?? 0), 0);
 
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
   const bestUsd = yields.length ? Math.max(...yields) : null;
   const worstUsd = yields.length ? Math.min(...yields) : null;
 
-  // Per-creator breakdown: executed trades, real USDC deployed, net P&L.
+  // Per-creator breakdown: executed trades, real FXRP deployed, net P&L.
   const byCreatorMap = new Map<string, { handle: string; trades: number; executed: number; pnlUsd: number; deployedUsdc: number; copies: number; fades: number }>();
   for (const t of trades) {
     const e = byCreatorMap.get(t.creator_handle) ?? { handle: t.creator_handle, trades: 0, executed: 0, pnlUsd: 0, deployedUsdc: 0, copies: 0, fades: 0 };

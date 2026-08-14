@@ -106,7 +106,7 @@ export function FadeTicket({ call }: { call: DossierCall }) {
 
   async function runQuote(currentMode: Mode) {
     if (!isValidAddress) {
-      setError("Enter a valid Base Sepolia token address to price the demo swap.");
+      setError("Enter a valid Coston2 token address to price the position.");
       return;
     }
     if (!address) {
@@ -279,7 +279,7 @@ export function FadeTicket({ call }: { call: DossierCall }) {
           <input
             value={assetAddress}
             onChange={(e) => setAssetAddress(e.target.value)}
-            placeholder="0x… (token address on Base Sepolia)"
+            placeholder="0x… (token address on Coston2)"
             className="border rounded px-2 py-1 text-xs font-mono"
             style={{ background: "var(--bg-2)", borderColor: "var(--line)", color: "var(--ink)" }}
           />

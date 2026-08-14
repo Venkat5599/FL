@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { isRealTweetUrl, resolveTweetUrl } from "@/lib/xlink";
-import { addressUrl as zgAddressUrl } from "@/lib/flare";
+import { addressUrl } from "@/lib/flare";
 import { netCfg, isNetwork } from "@/lib/networks";
 import { PoweredBy } from "@/components/PoweredBy";
 import type { FeedCall } from "@/app/api/feed/route";
@@ -73,7 +73,7 @@ export function CallTweet({
   const [reportPending, setReportPending] = useState(false);
   const [reportMsg, setReportMsg] = useState<string | null>(null);
 
-  // 0-yap: the 0G-distilled pure signal. Comes inline with the feed (call.yap)
+  // 0-yap: the enclave-distilled pure signal. Comes inline with the feed (call.yap)
   // so it's instant; only cards not yet distilled fall back to an on-demand
   // fetch that distills + caches on the server.
   type Yap = { bias: "long" | "short" | "neutral"; thesis: string; levels: string[]; teeVerified: boolean | null; error?: string };
@@ -209,11 +209,11 @@ export function CallTweet({
           </>
         )}
 
-        {/* the tweet — or, in 0-yap mode, the 0G-distilled pure signal */}
+        {/* the tweet — or, in 0-yap mode, the enclave-distilled pure signal */}
         {yapMode ? (
           <div className="yap-block" style={{ marginTop: deleted ? 12 : 10 }}>
             {!activeYap && yapLoading ? (
-              <div className="label flick" style={{ color: "var(--muted)" }}>distilling signal via 0G…</div>
+              <div className="label flick" style={{ color: "var(--muted)" }}>distilling signal…</div>
             ) : activeYap?.thesis ? (
               <>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
@@ -298,7 +298,7 @@ export function CallTweet({
           );
         })()}
 
-        {/* 0G TEE proof status bar */}
+        {/* Flare evidence chain status bar */}
         {ai && (
           <button
             className={`proof-bar ${ai.verified ? "proof-bar-verified" : ""} ${proofOpen ? "open" : ""}`}
@@ -307,9 +307,9 @@ export function CallTweet({
           >
             <span className="proof-bar-left">
               <span className="proof-dot" />
-              <span className="proof-title">{ai.verified ? "TEE-verified" : "0G inference"}</span>
+              <span className="proof-title">{ai.verified ? "TEE-verified" : "evidence chain"}</span>
               {ai.verified && <span className="proof-check">✓</span>}
-              <span className="proof-model">{ai.model ?? "0g-compute"}</span>
+              <span className="proof-model">Coston2</span>
             </span>
             <span className="proof-toggle">
               {proofOpen ? "hide proof" : "show full proof"}
@@ -320,40 +320,57 @@ export function CallTweet({
 
         {proofOpen && ai && (
           <div className="proof-panel">
-            <div className="label" style={{ marginBottom: 10 }}>// 0G mainnet compute · verifiable, provable inference</div>
-            <ProofRow k="model" v={ai.model} />
-            <ProofRow k="classified" v={`${ai.aiTemplate ?? call.template}${ai.aiConfidence != null ? ` (${Math.round(ai.aiConfidence * 100)}%)` : ""}`} />
-            <ProofRow k="provider" v={trunc(ai.provider, 10)} mono href={ai.provider ? zgAddressUrl(ai.provider) : undefined} />
-            <ProofRow k="chat id" v={trunc(ai.chatId, 12)} mono />
-            <ProofRow k="request id" v={trunc(ai.requestId, 10)} mono />
-            {ai.hasSignature && <ProofRow k="tee signature" v={receipt ? trunc(receipt.tee_signature, 12) : "…"} mono />}
-            <ProofRow k="content hash" v={receipt ? trunc(receipt.content_hash, 12) : "…"} mono />
-            {ai.costA0gi && <ProofRow k="cost" v={`${(Number(ai.costA0gi) / 1e18).toFixed(6)} A0GI`} mono />}
-            <div className="label" style={{ marginTop: 10, color: ai.verified ? "var(--gain)" : "var(--muted)" }}>
-              {ai.verified
-                ? "on-chain TEE signature verified by the 0G router (verify_tee)"
-                : "transport-layer (TeeTLS) attestation via the 0G router, no per-response signature exposed"}
+            <div className="label" style={{ marginBottom: 10 }}>
+              // three protocols, three separate guarantees
             </div>
-            <div style={{ borderTop: "1px solid var(--line)", marginTop: 12, paddingTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+
+            {/* 1. FDC — the post is proven, not scraped */}
+            <ProofRow k="evidence" v="FDC Web2Json" />
+            <ProofRow k="content hash" v={receipt ? trunc(receipt.content_hash, 12) : "…"} mono />
+            <div className="label" style={{ color: "var(--faint)", lineHeight: 1.6, marginBottom: 10 }}>
+              A Merkle proof against a voting round Flare&apos;s data providers signed. Delete
+              the post and this record stands; edit it and the divergence is emitted.
+            </div>
+
+            {/* 2. FCC — judgement under sealed weights */}
+            <ProofRow k="judgement" v="FCC · SCORE/CLASSIFY" />
+            <ProofRow
+              k="classified"
+              v={`${ai.aiTemplate ?? call.template}${
+                ai.aiConfidence != null ? ` (${Math.round(ai.aiConfidence * 100)}%)` : ""
+              }`}
+            />
+            <div className="label" style={{ color: "var(--faint)", lineHeight: 1.6, marginBottom: 10 }}>
+              Classified by deterministic rules inside a hardware enclave whose ranking
+              weights are never published — a leaderboard with a public formula gets farmed
+              rather than satisfied. Inputs public, verdict signed, function secret.
+            </div>
+
+            {/* 3. FTSOv2 — the price nobody picks */}
+            <ProofRow k="price" v="FTSOv2 block-latency feed" />
+            <div className="label" style={{ color: "var(--faint)", lineHeight: 1.6 }}>
+              Entry and settlement marks are read on-chain and carry the oracle&apos;s own
+              timestamp. A stale feed is refused rather than quietly used.
+            </div>
+
+            <div
+              style={{
+                borderTop: "1px solid var(--line)",
+                marginTop: 12,
+                paddingTop: 12,
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
               <VerifyButton callId={call.call_id} />
-              {ai.provider && (
-                <a
-                  href={zgAddressUrl(ai.provider)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="label"
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--ink)" }}
-                >
-                  <span className="proof-dot" /> look up this provider on the 0G explorer ↗
-                </a>
-              )}
-              {/* trustless: anyone can reproduce the check against 0G directly */}
               <div className="label" style={{ color: "var(--faint)", lineHeight: 1.6 }}>
-                verify independently: POST it to 0G&apos;s router (
-                <span style={{ fontFamily: "var(--font-mono)", color: "var(--muted)" }}>router-api.0g.ai/v1/chat/completions</span>
-                ) with <span style={{ fontFamily: "var(--font-mono)", color: "var(--muted)" }}>verify_tee:true</span> + header{" "}
-                <span style={{ fontFamily: "var(--font-mono)", color: "var(--muted)" }}>X-0G-Provider-Trust-Mode: private</span>; the response&apos;s{" "}
-                <span style={{ fontFamily: "var(--font-mono)", color: "var(--muted)" }}>x_0g_trace.tee_verified</span> is 0G&apos;s answer, not ours.
+                verify independently: read the same FTSOv2 feed id from{" "}
+                <span style={{ fontFamily: "var(--font-mono)", color: "var(--muted)" }}>
+                  ContractRegistry
+                </span>{" "}
+                on Coston2, or re-check the FDC proof against the relay. Neither answer
+                comes from us.
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 2 }}>
                 <PoweredBy protocol="fcc" />
@@ -435,7 +452,8 @@ type VerifyResult = {
   detail: string;
 };
 
-// Runs 0G's own verification (broker.processResponse) live, via /api/verify.
+// Re-checks the Flare evidence chain live via /api/verify: FDC attestation state,
+// the enclave verdict, and a fresh FTSOv2 mark.
 function VerifyButton({ callId }: { callId: number }) {
   const [state, setState] = useState<"idle" | "loading" | "done">("idle");
   const [res, setRes] = useState<VerifyResult | null>(null);
@@ -460,15 +478,15 @@ function VerifyButton({ callId }: { callId: number }) {
     <div>
       <button className={`proof-badge ${state === "loading" ? "" : ""}`} onClick={run} disabled={state === "loading"}>
         <span className="proof-dot" />
-        {state === "loading" ? "verifying against 0G…" : "verify this inference now"}
+        {state === "loading" ? "checking the chain…" : "verify on-chain now"}
       </button>
       {state === "done" && res && (
         <div style={{ marginTop: 8 }}>
           <div className="label" style={{ color, lineHeight: 1.5 }}>{mark} · {res.detail}</div>
-          {/* independent, 0G-sourced evidence — not our claim */}
+          {/* independent, chain-sourced evidence — not our claim */}
           {(res.attestation || res.requestId || res.provider) && (
             <div style={{ marginTop: 8, border: "1px solid var(--line)", borderRadius: "var(--radius)", padding: "10px 12px", background: "var(--surface)" }}>
-              <div className="label" style={{ marginBottom: 8 }}>// evidence, from 0G&apos;s own registry</div>
+              <div className="label" style={{ marginBottom: 8 }}>// evidence, read from Flare</div>
               {res.attestation?.teeType && <EvRow k="TEE hardware" v={res.attestation.teeType} />}
               {res.attestation?.teeVerifier && <EvRow k="attestation" v={res.attestation.teeVerifier} />}
               {res.attestation?.verifiability && <EvRow k="verifiability" v={res.attestation.verifiability} />}
@@ -477,7 +495,7 @@ function VerifyButton({ callId }: { callId: number }) {
               {res.provider && (
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "4px 0" }}>
                   <span className="label">provider</span>
-                  <a href={zgAddressUrl(res.provider)} target="_blank" rel="noopener noreferrer" className="link" style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink)", textDecoration: "underline", textUnderlineOffset: 2 }}>
+                  <a href={addressUrl(res.provider)} target="_blank" rel="noopener noreferrer" className="link" style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink)", textDecoration: "underline", textUnderlineOffset: 2 }}>
                     {res.provider.slice(0, 12)}… on-chain ↗
                   </a>
                 </div>

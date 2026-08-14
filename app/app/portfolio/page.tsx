@@ -86,10 +86,10 @@ function fmtShortDate(value: string | number | null) {
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 // The USDC that actually moved on an executed trade — mirrors the API's usdcLeg
-// so the chart's cumulative curve matches the "USDC deployed" stat exactly.
+// so the chart's cumulative curve matches the "FXRP deployed" stat exactly.
 function usdcLeg(t: PortfolioTrade): number {
-  if (t.in_symbol === "USDC" && t.in_amount != null) return t.in_amount;
-  if (t.out_symbol === "USDC" && t.out_amount != null) return t.out_amount;
+  if (t.in_symbol === "FXRP" && t.in_amount != null) return t.in_amount;
+  if (t.out_symbol === "FXRP" && t.out_amount != null) return t.out_amount;
   return 0;
 }
 
@@ -196,7 +196,7 @@ export default function PortfolioPage() {
                     {s.settledCount === 0 ? "no settled trades yet" : `${s.wins}W · ${s.losses}L of ${s.settledCount}`}
                   </span>
                 </StatCell>
-                <StatCell label="USDC deployed">
+                <StatCell label="FXRP deployed">
                   {s.deployedUsdc.toFixed(2)}
                   <span className="label" style={{ display: "block", marginTop: 6, color: "var(--faint)", fontFamily: "var(--font-mono)", fontWeight: 400, fontSize: 10 }}>
                     real on-chain · executed only
@@ -268,7 +268,7 @@ export default function PortfolioPage() {
                           <div style={{ marginTop: 12, height: 6, borderRadius: 3, background: "var(--line)", overflow: "hidden" }}>
                             <div style={{ width: `${Math.round((c.deployedUsdc / maxDeployed) * 100)}%`, height: "100%", background: "var(--ink)" }} />
                           </div>
-                          <div className="label tnum" style={{ marginTop: 6, color: "var(--faint)", fontSize: 10 }}>{c.deployedUsdc.toFixed(2)} USDC deployed</div>
+                          <div className="label tnum" style={{ marginTop: 6, color: "var(--faint)", fontSize: 10 }}>{c.deployedUsdc.toFixed(2)} FXRP deployed</div>
                         </div>
                       );
                     })}
