@@ -38,7 +38,18 @@ export default function RootLayout({
       lang="en"
       className={`${display.variable} ${mono.variable} ${pixel.variable} h-full antialiased`}
     >
-      <body className="min-h-full">
+      {/*
+        suppressHydrationWarning is on <body> specifically because browser extensions
+        inject attributes onto it before React hydrates — we saw data-__-e-c-m_injected
+        added by one. Verified this is not ours: the server sends `<body class="min-h-full">`
+        with nothing else, and the attribute appears nowhere in this codebase.
+
+        This is the case React provides the prop for, and it is deliberately narrow: it
+        silences mismatches on THIS element only, one level deep. Any genuine hydration
+        mismatch inside the app still reports normally, so this hides an environment
+        artifact rather than a class of bugs.
+      */}
+      <body className="min-h-full" suppressHydrationWarning>
         {/* ambient dither behind everything: living paper grain */}
         <div aria-hidden className="app-dither">
           <DitherArt shape="field" gap={5} className="h-full w-full" />
