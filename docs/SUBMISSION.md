@@ -166,5 +166,5 @@ Coston2 (chain 114). Addresses will be listed here once the funding and credenti
 
 ## Links
 
-- Repo: `github.com/Venkat5599/FL`
+- Repo: https://github.com/Venkat5599/FL/tree/flare-port (the `flare-port` branch — `main` still holds the pre-existing GigaBags project, which is exactly the "what existed before" comparison this submission refers to)
 - Pre-existing project (for the "what existed before" comparison): `kollateral/` in this workspace, live at `gigabags.vercel.app`
