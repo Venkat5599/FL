@@ -46,9 +46,14 @@ contract TapeInstructionSender is Ownable2Step {
     // forge-lint: disable-next-line(unsafe-typecast)
     bytes32 public constant OP_COMMAND_WEIGHTS = bytes32("WEIGHTS");
 
-    /// @dev Public extension ids start here; `setExtensionId` scans upward from this
-    ///      floor to find the id whose registered sender is this contract.
-    uint256 private constant FIRST_PUBLIC_EXTENSION_ID = 0x10000;
+    /// @dev Public extension ids start here (65,536). Retained as a reference point for
+    ///      `findExtensionId` callers; nothing scans from it automatically.
+    uint256 public constant FIRST_PUBLIC_EXTENSION_ID = 0x10000;
+
+    /// @dev Hard cap on `findExtensionId`'s range. It is a view function, so this is not
+    ///      about gas — it is about keeping an unbounded loop from ever being reachable
+    ///      by a future caller who copies the pattern into a state-changing path.
+    uint256 public constant MAX_SCAN_RANGE = 2_000;
 
     ITeeExtensionRegistry public immutable TEE_EXTENSION_REGISTRY;
     ITeeMachineRegistry public immutable TEE_MACHINE_REGISTRY;
@@ -64,7 +69,8 @@ contract TapeInstructionSender is Ownable2Step {
 
     error ZeroAddress();
     error ExtensionIdAlreadySet();
-    error ExtensionIdNotFound();
+    error ExtensionIdMismatch(uint256 id, address registeredSender, address self);
+    error ScanRangeTooLarge(uint256 from, uint256 to);
     error ExtensionIdNotSet();
     error TextDoesNotMatchAttestation(bytes32 expected, bytes32 actual);
     error NoTeeMachinesAvailable();
@@ -89,25 +95,58 @@ contract TapeInstructionSender is Ownable2Step {
         CALL_TAPE = _callTape;
     }
 
-    /// @notice Discover and pin this contract's extension id.
-    /// @dev Registration happens off-chain during deployment (`pre-build.sh`), so the id
-    ///      is not known at construction time and has to be found afterwards by scanning
-    ///      the registry for the extension whose sender is this address. Permissionless
-    ///      and one-shot: the answer is a fact about the registry rather than a policy
-    ///      choice, so there is nothing to gate — but it must never be reassigned, or
-    ///      instructions would silently start routing to a different extension.
-    function setExtensionId() external returns (uint256) {
+    /// @notice Pin this contract's extension id, verifying it against the registry.
+    /// @dev Registration happens off-chain during deployment, so the id is not known at
+    ///      construction time and must be set afterwards.
+    ///
+    ///      This takes the id EXPLICITLY rather than searching for it. The scaffold's
+    ///      reference implementation scans upward from FIRST_PUBLIC_EXTENSION_ID to
+    ///      `nextPublicExtensionId()` looking for the entry whose sender is this
+    ///      contract, which is O(n) against a counter that only ever grows. On Coston2
+    ///      that counter is already past 66,000 — around 760 external calls, roughly 2M
+    ///      gas, to learn a single number that the deployer already knows from the
+    ///      registration receipt. It fits under the current 28M block limit and will
+    ///      stop fitting at some point nobody will predict, which is the worst kind of
+    ///      failure: one that appears only in production, only later.
+    ///
+    ///      Supplying the id costs nothing in safety, because the id is still VERIFIED
+    ///      here: the registry must independently agree that this exact contract is the
+    ///      instruction sender for it. A wrong or hostile id cannot be pinned — it is
+    ///      rejected by the registry's own record, not by our say-so.
+    ///
+    ///      Owner-gated and one-shot. Reassignment would silently reroute every later
+    ///      instruction to a different extension.
+    /// @param _id The extension id minted when this contract was registered.
+    function setExtensionId(uint256 _id) external onlyOwner returns (uint256) {
         if (_extensionId != 0) revert ExtensionIdAlreadySet();
 
-        uint256 next = TEE_EXTENSION_REGISTRY.nextPublicExtensionId();
-        for (uint256 i = FIRST_PUBLIC_EXTENSION_ID; i < next; ++i) {
+        address registered = TEE_EXTENSION_REGISTRY.getTeeExtensionInstructionsSender(_id);
+        if (registered != address(this)) {
+            revert ExtensionIdMismatch(_id, registered, address(this));
+        }
+
+        _extensionId = _id;
+        emit ExtensionIdSet(_id);
+        return _id;
+    }
+
+    /// @notice Find this contract's extension id by scanning a bounded range.
+    /// @dev A convenience for the case where the registration receipt has been lost. It
+    ///      is deliberately a `view` — it costs the caller nothing over an RPC call and
+    ///      cannot be used to set state — and deliberately bounded, so it can never
+    ///      become the unbounded on-chain loop this contract used to carry. Feed the
+    ///      result to `setExtensionId`.
+    /// @param _from First id to check (inclusive).
+    /// @param _to Last id to check (exclusive).
+    function findExtensionId(uint256 _from, uint256 _to) external view returns (bool found, uint256 id) {
+        if (_to <= _from || _to - _from > MAX_SCAN_RANGE) revert ScanRangeTooLarge(_from, _to);
+
+        for (uint256 i = _from; i < _to; ++i) {
             if (TEE_EXTENSION_REGISTRY.getTeeExtensionInstructionsSender(i) == address(this)) {
-                _extensionId = i;
-                emit ExtensionIdSet(i);
-                return i;
+                return (true, i);
             }
         }
-        revert ExtensionIdNotFound();
+        return (false, 0);
     }
 
     function extensionId() external view returns (uint256) {

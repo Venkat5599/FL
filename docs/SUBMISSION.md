@@ -110,7 +110,7 @@ Everything touching Flare — all of it written from scratch:
 | `app/app/api/x-post/[id]/route.ts` | Credential-isolating read proxy |
 | `app/scripts/attest-post.ts` | End-to-end FDC attestation pipeline |
 
-**197 tests, all passing** — 49 Solidity (Foundry, incl. fuzz), 70 TEE extension, 78 app.
+**200 tests, all passing** — 52 Solidity (Foundry, incl. fuzz), 70 TEE extension, 78 app.
 
 The app suite shrank during the port: ten tests covering the 0G, The Graph and Uniswap modules were removed along with the modules themselves, since those code paths no longer exist.
 
@@ -158,9 +158,9 @@ Stated plainly, because overclaiming here is worse than an incomplete submission
 
 | Contract | Address |
 |---|---|
-| `PostRegistry` | [`0xEDF2563179809B328129a76dEeE90dB296195BcF`](https://coston2-explorer.flare.network/address/0xEDF2563179809B328129a76dEeE90dB296195BcF) |
-| `CallTape` | [`0xFBCaAB36Ea0dB02960B202c324cB777f6eb5dA7F`](https://coston2-explorer.flare.network/address/0xFBCaAB36Ea0dB02960B202c324cB777f6eb5dA7F) |
-| `TapeInstructionSender` | [`0xAbC7414410528d40fd32e7649F3729F82939Aa07`](https://coston2-explorer.flare.network/address/0xAbC7414410528d40fd32e7649F3729F82939Aa07) |
+| `PostRegistry` | [`0x7b4b536Ac15bE7E5F43276ea71CCC1e1Be6124b4`](https://coston2-explorer.flare.network/address/0x7b4b536Ac15bE7E5F43276ea71CCC1e1Be6124b4) |
+| `CallTape` | [`0xC0309C5dE3f46a20A0f084dF8635d927FD1e22e5`](https://coston2-explorer.flare.network/address/0xC0309C5dE3f46a20A0f084dF8635d927FD1e22e5) |
+| `TapeInstructionSender` | [`0x657f0fAfe5AfD5C2cdEa18840bc25fF4eDa35Fe9`](https://coston2-explorer.flare.network/address/0x657f0fAfe5AfD5C2cdEa18840bc25fF4eDa35Fe9) |
 
 Flare system contracts used (resolved at runtime, never hardcoded):
 
@@ -175,8 +175,7 @@ Flare system contracts used (resolved at runtime, never hardcoded):
 ### Verified live on-chain after deployment
 
 ```
-CallTape.POST_REGISTRY  = 0xEDF2563179809B328129a76dEeE90dB296195BcF   -> bound to the evidence layer
-CallTape.verdictWriter  = 0xAbC7414410528d40fd32e7649F3729F82939Aa07   -> only the TEE path may write verdicts
+CallTape.verdictWriter  = 0x657f0fAfe5AfD5C2cdEa18840bc25fF4eDa35Fe9   -> only the TEE path may write verdicts
 CallTape.maxFeedAge     = 300                                          -> staleness guard active
 Sender.OP_TYPE_SCORE    = 0x53434f5245...                              -> "SCORE"
 ```
@@ -188,6 +187,52 @@ getFeedByIdInWei(XRP/USD) -> 1002306000000000000 ($1.002306), timestamp 17867295
 ```
 
 That is the derivation being validated against the chain itself, not merely against the published feed table.
+
+### A registration bug found and fixed before it could bite
+
+The FCC scaffold's reference `setExtensionId()` discovers its own extension id by scanning
+upward from `FIRST_PUBLIC_EXTENSION_ID` (65,536) to `nextPublicExtensionId()`, looking for
+the entry whose registered sender is itself. That is O(n) against a counter that only
+grows. On Coston2 it is already past 66,000 — roughly 760 external calls and ~2M gas to
+learn one number the deployer already has from the registration receipt. It still fits
+under the 28M block limit today, and will stop fitting on a date nobody will predict.
+
+Replaced with `setExtensionId(uint256)`: the id is supplied, then **verified** against the
+registry, which must independently agree that this exact contract is the instruction
+sender for it. Safety is unchanged because the registry's own record does the checking —
+demonstrated live by attempting to claim a different team's extension id:
+
+```
+setExtensionId(65858) reverts
+  ExtensionIdMismatch(65858, 0x058d91FaFF…, 0x657f0fAf…)
+  "that id's registered sender is someone else's contract, not yours"
+```
+
+A bounded `findExtensionId(from, to)` view remains for the case where the receipt is lost.
+It is a `view` and range-capped, so the unbounded loop cannot return via a copy-paste into
+a state-changing path.
+
+Credit: flagged by another Summer Signal builder (Remnara #65858 / Provn #65859), who hit
+the same wall. Also confirmed from their report and verified independently here: the
+Coston2 `FlareTeeManager` diamond was redeployed on 22 Jul — the old
+`0x004224fa1BF1Acd3D233f011FB03b8dd5fA5d41F` still has bytecode but **reverts** on
+`nextPublicExtensionId()`, so a contract built against it is dead and must be redeployed
+rather than re-registered, since the manager is an immutable constructor arg. This build
+targets the live diamond.
+
+### Remaining FCC deployment requirements (documented for reproducibility)
+
+| Thing | Value |
+|---|---|
+| Flare hosted proxy (`NORMAL_PROXY_URL`, voter-signed availability proof) | `https://tee-proxy-coston2-1.flare.rocks` — you register nothing on it |
+| Your extension proxy host URL (registered on-chain, `-h`) | **self-hosted**; there is no Flare-issued per-extension endpoint. A public HTTPS tunnel to the local ext-proxy is sufficient — providers fetch the TEE attestation from whatever host is registered |
+| Coston2 C-chain indexer | MySQL `34.38.42.208:3306`, database `indexer`, read-only hackathon credentials from the Flare devs. Read directly over MySQL, **not** an HTTP API. No VPN for Coston2 |
+| FDC testnet verifier | `https://fdc-verifiers-testnet.flare.network` — requires a real API key; the all-zeros default returns 401 |
+
+Multiple TEE machines per extension is the supported shape (`getActiveTeeMachines`,
+`getRandomTeeIds`), provided every machine runs a byte-identical image — the measured
+`codeHash` is per-image, so reference by digest rather than tag, and whitelist that hash
+once via owner-only `AddTeeVersion` or `Register` reverts `Verification.VersionNotSupported`.
 
 **Still unproven, and stated as such:** the FDC attestation round-trip and FCC machine registration. FCC registration requires Coston2 indexer database credentials that Flare support issues, and the FDC path additionally requires an X API bearer token in the deployed environment. Neither is a code gap — both paths are built and unit-tested — but neither has executed against the live network, so this submission does not claim they have.
 

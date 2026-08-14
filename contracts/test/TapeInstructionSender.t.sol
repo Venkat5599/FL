@@ -129,23 +129,66 @@ contract TapeInstructionSenderTest is Test {
 
     // ---- extension id discovery -------------------------------------------------
 
-    function test_SetExtensionId_FindsOwnRegistration() public {
-        assertEq(sender.setExtensionId(), EXTENSION_ID);
+    function test_SetExtensionId_PinsVerifiedId() public {
+        vm.prank(owner);
+        assertEq(sender.setExtensionId(EXTENSION_ID), EXTENSION_ID);
         assertEq(sender.extensionId(), EXTENSION_ID);
     }
 
-    function test_SetExtensionId_RevertsWhenNotRegistered() public {
+    /// @dev The id is supplied by the caller but verified against the registry, so a
+    ///      wrong or hostile id is rejected by the registry's own record rather than by
+    ///      our say-so. This is what makes taking the id as an argument safe.
+    function test_SetExtensionId_RevertsWhenRegistryDisagrees() public {
         extReg.setSender(EXTENSION_ID, address(0xdead));
-        vm.expectRevert(TapeInstructionSender.ExtensionIdNotFound.selector);
-        sender.setExtensionId();
+        vm.prank(owner);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                TapeInstructionSender.ExtensionIdMismatch.selector,
+                EXTENSION_ID,
+                address(0xdead),
+                address(sender)
+            )
+        );
+        sender.setExtensionId(EXTENSION_ID);
+    }
+
+    function test_SetExtensionId_RevertsForUnregisteredId() public {
+        vm.prank(owner);
+        vm.expectRevert();
+        sender.setExtensionId(999_999);
+    }
+
+    function test_SetExtensionId_IsOwnerOnly() public {
+        vm.prank(requester);
+        vm.expectRevert();
+        sender.setExtensionId(EXTENSION_ID);
     }
 
     /// @dev Reassignment would silently reroute every later instruction to a different
     ///      extension, so it is a one-shot operation.
     function test_SetExtensionId_IsOneShot() public {
-        sender.setExtensionId();
+        vm.startPrank(owner);
+        sender.setExtensionId(EXTENSION_ID);
         vm.expectRevert(TapeInstructionSender.ExtensionIdAlreadySet.selector);
-        sender.setExtensionId();
+        sender.setExtensionId(EXTENSION_ID);
+        vm.stopPrank();
+    }
+
+    /// @dev The bounded finder replaces the old unbounded on-chain scan. It is a view,
+    ///      so the range cap is not about gas — it is about the pattern never being
+    ///      copied into a state-changing path.
+    function test_FindExtensionId_LocatesAndRefusesHugeRanges() public {
+        (bool found, uint256 id) = sender.findExtensionId(EXTENSION_ID, EXTENSION_ID + 5);
+        assertTrue(found);
+        assertEq(id, EXTENSION_ID);
+
+        (bool missing,) = sender.findExtensionId(EXTENSION_ID + 10, EXTENSION_ID + 20);
+        assertFalse(missing);
+
+        vm.expectRevert(
+            abi.encodeWithSelector(TapeInstructionSender.ScanRangeTooLarge.selector, uint256(0), uint256(100_000))
+        );
+        sender.findExtensionId(0, 100_000);
     }
 
     function test_RequestClassify_RevertsBeforeExtensionIdSet() public {
@@ -160,7 +203,8 @@ contract TapeInstructionSenderTest is Test {
     ///      even though the text itself travels off-chain with the instruction.
     function test_RequestClassify_RevertsOnSubstitutedText() public {
         uint256 postId = _recordDefaultPost();
-        sender.setExtensionId();
+        vm.prank(owner);
+        sender.setExtensionId(EXTENSION_ID);
 
         string memory forged = "shorting XRP here, target 1.00";
         vm.expectRevert(
@@ -177,13 +221,15 @@ contract TapeInstructionSenderTest is Test {
     ///      equality, not a similarity check.
     function test_RequestClassify_RevertsOnSingleCharacterChange() public {
         uint256 postId = _recordDefaultPost();
-        sender.setExtensionId();
+        vm.prank(owner);
+        sender.setExtensionId(EXTENSION_ID);
         vm.expectRevert();
         sender.requestClassify(postId, "longing XRP here, target 3.21");
     }
 
     function test_RequestClassify_RevertsForUnattestedPost() public {
-        sender.setExtensionId();
+        vm.prank(owner);
+        sender.setExtensionId(EXTENSION_ID);
         vm.expectRevert(PostRegistry.UnknownPost.selector);
         sender.requestClassify(99, POST_TEXT);
     }
@@ -192,7 +238,8 @@ contract TapeInstructionSenderTest is Test {
 
     function test_RequestClassify_SendsCorrectlyRoutedInstruction() public {
         uint256 postId = _recordDefaultPost();
-        sender.setExtensionId();
+        vm.prank(owner);
+        sender.setExtensionId(EXTENSION_ID);
 
         vm.deal(requester, 1 ether);
         vm.prank(requester);
@@ -214,7 +261,8 @@ contract TapeInstructionSenderTest is Test {
     ///      the enclave from being paid to score an empty history and emit a
     ///      TEE-signed zero that reads like a real verdict.
     function test_RequestRank_RevertsWithoutSettledCalls() public {
-        sender.setExtensionId();
+        vm.prank(owner);
+        sender.setExtensionId(EXTENSION_ID);
         bytes32 authorHash = keccak256(bytes("somecaller"));
 
         vm.prank(requester);
@@ -226,7 +274,8 @@ contract TapeInstructionSenderTest is Test {
     ///      nowhere and leaving the caller waiting for a verdict that cannot arrive.
     function test_Request_RevertsWhenNoTeeMachines() public {
         uint256 postId = _recordDefaultPost();
-        sender.setExtensionId();
+        vm.prank(owner);
+        sender.setExtensionId(EXTENSION_ID);
         machineReg.setCount(0);
         vm.expectRevert(TapeInstructionSender.NoTeeMachinesAvailable.selector);
         sender.requestClassify(postId, POST_TEXT);
@@ -235,7 +284,8 @@ contract TapeInstructionSenderTest is Test {
     /// @dev Weights define the leaderboard, so the right to set them is the right to
     ///      decide who ranks well. It cannot be public.
     function test_UpdateWeights_IsOwnerOnly() public {
-        sender.setExtensionId();
+        vm.prank(owner);
+        sender.setExtensionId(EXTENSION_ID);
         vm.prank(requester);
         vm.expectRevert();
         sender.updateWeights(hex"deadbeef");
@@ -265,7 +315,8 @@ contract TapeInstructionSenderTest is Test {
     /// @dev No text other than the attested text may ever be accepted.
     function testFuzz_OnlyAttestedTextIsAccepted(string calldata _candidate) public {
         uint256 postId = _recordDefaultPost();
-        sender.setExtensionId();
+        vm.prank(owner);
+        sender.setExtensionId(EXTENSION_ID);
 
         if (keccak256(bytes(_candidate)) == keccak256(bytes(POST_TEXT))) {
             sender.requestClassify(postId, _candidate);

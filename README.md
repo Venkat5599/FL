@@ -89,9 +89,9 @@ So the token never travels with the attestation. It sits behind a minimal read p
 
 | Contract | Address |
 |---|---|
-| `PostRegistry` | `0xEDF2563179809B328129a76dEeE90dB296195BcF` |
-| `CallTape` | `0xFBCaAB36Ea0dB02960B202c324cB777f6eb5dA7F` |
-| `TapeInstructionSender` | `0xAbC7414410528d40fd32e7649F3729F82939Aa07` |
+| `PostRegistry` | `0x7b4b536Ac15bE7E5F43276ea71CCC1e1Be6124b4` |
+| `CallTape` | `0xC0309C5dE3f46a20A0f084dF8635d927FD1e22e5` |
+| `TapeInstructionSender` | `0x657f0fAfe5AfD5C2cdEa18840bc25fF4eDa35Fe9` |
 
 App: https://app-f6zaxplae-venkat5599s-projects.vercel.app
 
@@ -101,7 +101,7 @@ the verification transcript and for what remains unproven.
 
 ## Status
 
-197 tests passing. Contracts compile clean with zero warnings. No 0G, The Graph or Uniswap code remains — those modules and their tests were deleted, not left dormant.
+200 tests passing. Contracts compile clean with zero warnings. No 0G, The Graph or Uniswap code remains — those modules and their tests were deleted, not left dormant.
 
 Not yet run end-to-end on Coston2: FCC machine registration requires **Coston2 indexer credentials issued by Flare support**, and deployment requires testnet funding. Both are external blockers, both are noted in [`docs/SUBMISSION.md`](docs/SUBMISSION.md) alongside everything else that is built-but-unproven.
 
