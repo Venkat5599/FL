@@ -161,6 +161,7 @@ Stated plainly, because overclaiming here is worse than an incomplete submission
 | `PostRegistry` | [`0x7b4b536Ac15bE7E5F43276ea71CCC1e1Be6124b4`](https://coston2-explorer.flare.network/address/0x7b4b536Ac15bE7E5F43276ea71CCC1e1Be6124b4) |
 | `CallTape` | [`0xC0309C5dE3f46a20A0f084dF8635d927FD1e22e5`](https://coston2-explorer.flare.network/address/0xC0309C5dE3f46a20A0f084dF8635d927FD1e22e5) |
 | `TapeInstructionSender` | [`0x657f0fAfe5AfD5C2cdEa18840bc25fF4eDa35Fe9`](https://coston2-explorer.flare.network/address/0x657f0fAfe5AfD5C2cdEa18840bc25fF4eDa35Fe9) |
+| `FeedMarkLog` | [`0x0b5fC92e207FDeF5B33A2767FBd9C9186B01184A`](https://coston2-explorer.flare.network/address/0x0b5fC92e207FDeF5B33A2767FBd9C9186B01184A) |
 
 Flare system contracts used (resolved at runtime, never hardcoded):
 
@@ -233,6 +234,42 @@ Multiple TEE machines per extension is the supported shape (`getActiveTeeMachine
 `getRandomTeeIds`), provided every machine runs a byte-identical image — the measured
 `codeHash` is per-image, so reference by digest rather than tag, and whitelist that hash
 once via owner-only `AddTeeVersion` or `Register` reverts `Verification.VersionNotSupported`.
+
+### A transaction anyone can check, sent from the app
+
+`FeedMarkLog` makes the FTSOv2 link demonstrable without waiting on the FDC or FCC
+credentials. It is not a demo prop bolted on: FTSOv2 is a spot oracle with no history, so
+TAPE records marks **forward** and those recordings become the history. `CallTape` does
+exactly this at open and settle; `FeedMarkLog` does it standalone, before a call is bound
+to a price.
+
+Pressing **mark XRP/USD on-chain** in the terminal posts a feed id and nothing else. The
+contract reads FTSOv2 *inside the transaction* and stores the oracle's own value and
+timestamp, so neither the server nor the person clicking chooses the number — which is the
+only reason the resulting transaction is worth showing.
+
+Example, recorded live:
+
+```
+tx     0xdcd7dc9458b801d2bf6ede58d8f8cf22dbd051dcaa879294a95c05077cbf8ab0
+block  34062847
+mark   XRP/USD  $1.00064
+feed   0x015852502f55534400000000000000000000000000   (derived, not hardcoded)
+oracle ts 1786731563   written at 1786731573   (+10s)
+```
+
+https://coston2-explorer.flare.network/tx/0xdcd7dc9458b801d2bf6ede58d8f8cf22dbd051dcaa879294a95c05077cbf8ab0
+
+The UI shows the gap between the oracle's timestamp and the chain's, because a mark is
+only as good as how fresh it was when written down and hiding the lag would be the
+flattering choice.
+
+**On the server-side signer:** the mark endpoint signs with a throwaway key so the demo
+needs no wallet popup. That is a real trade-off — anyone who can reach the endpoint can
+spend its gas. It is acceptable only because the key holds faucet C2FLR and its one
+reachable function writes a public price mark, so the worst outcome is a wasted faucet
+grant. It must never hold mainnet funds; a production version belongs behind the user's
+own wallet or a rate-limited relayer with a spend cap.
 
 **Still unproven, and stated as such:** the FDC attestation round-trip and FCC machine registration. FCC registration requires Coston2 indexer database credentials that Flare support issues, and the FDC path additionally requires an X API bearer token in the deployed environment. Neither is a code gap — both paths are built and unit-tested — but neither has executed against the live network, so this submission does not claim they have.
 

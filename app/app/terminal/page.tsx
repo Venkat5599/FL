@@ -7,6 +7,7 @@ import { useNetwork } from "@/components/NetworkProvider";
 import { DitherArt } from "@/components/DitherArt";
 import { CallTweet } from "@/components/CallTweet";
 import { CreatorSearch } from "@/components/CreatorSearch";
+import { MarkOnChain } from "@/components/MarkOnChain";
 import type { FeedCall } from "@/app/api/feed/route";
 import type { InfluencerSummary } from "@/app/api/influencers/route";
 
@@ -246,6 +247,8 @@ export default function TerminalPage() {
                 </div>
               </div>
             </div>
+
+            <MarkOnChain symbol="XRP" />
           </div>
         </aside>
 
@@ -378,7 +381,7 @@ export default function TerminalPage() {
             </div>
 
             <div className="label" style={{ marginTop: 16, color: "var(--faint)", lineHeight: 1.6 }}>
-              every call is scored against real DEX prices and cross-checked against the caller&apos;s own wallet.
+              every call is marked against FTSOv2 on Coston2 — read on-chain, stamped with the oracle&apos;s own timestamp.
             </div>
           </div>
         </aside>
