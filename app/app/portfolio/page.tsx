@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ConnectWallet } from "@/components/ConnectWallet";
+import { useAuth } from "@/lib/useAuth";
 import { usePrivy } from "@privy-io/react-auth";
 import { DitherArt } from "@/components/DitherArt";
 import { PoweredBy } from "@/components/PoweredBy";
@@ -120,7 +122,20 @@ function StatusPill({ status }: { status: string | null }) {
 }
 
 export default function PortfolioPage() {
-  const { ready, authenticated, login, getAccessToken } = usePrivy();
+  const { login, getAccessToken } = usePrivy();
+  const { ready, authenticated, address, via } = useAuth();
+
+  // Privy's getAccessToken() throws when no provider is mounted, so it is only reachable
+  // when Privy owns the session. With a wallet session the address identifies the user
+  // (see the DEMO-ONLY note in lib/privy.ts — this is not signed, and is env-gated).
+  const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    if (via === "privy") {
+      const token = await getAccessToken();
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    }
+    return address ? { "x-wallet-address": address } : {};
+  }, [via, address, getAccessToken]);
+
   const [data, setData] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -130,8 +145,7 @@ export default function PortfolioPage() {
     setLoading(true);
     setError(null);
     try {
-      const token = await getAccessToken();
-      const res = await fetch("/api/portfolio", { headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+      const res = await fetch("/api/portfolio", { headers: await authHeaders() });
       if (!res.ok) throw new Error(`${res.status}`);
       setData((await res.json()) as PortfolioResponse);
     } catch (e) {
@@ -139,7 +153,7 @@ export default function PortfolioPage() {
     } finally {
       setLoading(false);
     }
-  }, [authenticated, getAccessToken]);
+  }, [authenticated, authHeaders]);
 
   useEffect(() => {
     void load();
@@ -158,7 +172,7 @@ export default function PortfolioPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6" style={{ padding: "clamp(48px, 10vw, 110px) 24px 100px" }}>
-      <div className="label" style={{ marginBottom: 10 }}>// copy/fade performance · settled on Base · priced via The Graph</div>
+      <div className="label" style={{ marginBottom: 10 }}>// copy/fade performance · settled in FXRP · priced via FTSOv2</div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "1px solid var(--line)", paddingBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <h1 style={{ fontSize: "clamp(32px, 6vw, 56px)" }}>Portfolio</h1>
         {ready && authenticated && (
@@ -173,8 +187,8 @@ export default function PortfolioPage() {
       {ready && !authenticated && (
         <div className="panel" style={{ marginTop: 40, padding: "28px 26px", maxWidth: 480 }}>
           <p className="label" style={{ marginBottom: 16 }}>authentication required</p>
-          <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 20 }}>Log in to see your copy/fade trade history and performance.</p>
-          <button style={btnPrimary} onClick={() => login()}>Log in</button>
+          <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 20 }}>Connect a wallet to see your copy/fade history and performance.</p>
+          <ConnectWallet />
         </div>
       )}
 

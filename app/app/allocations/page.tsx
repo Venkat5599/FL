@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/lib/useAuth";
 import { usePrivy } from "@privy-io/react-auth";
 import { DitherArt } from "@/components/DitherArt";
 import { CreatorSearch, type CreatorOption } from "@/components/CreatorSearch";
@@ -28,7 +29,19 @@ const btn: React.CSSProperties = {
 const ghost: React.CSSProperties = { ...btn, background: "transparent", color: "var(--muted)", borderColor: "var(--line-strong)" };
 
 export default function AllocationsPage() {
-  const { ready, authenticated, login, getAccessToken } = usePrivy();
+  const { login, getAccessToken } = usePrivy();
+  const { ready, authenticated, address, via } = useAuth();
+
+  // Privy's getAccessToken() throws when no provider is mounted, so it is only reachable
+  // when Privy owns the session. With a wallet session the address identifies the user
+  // (see the DEMO-ONLY note in lib/privy.ts — this is not signed, and is env-gated).
+  const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    if (via === "privy") {
+      const token = await getAccessToken();
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    }
+    return address ? { "x-wallet-address": address } : {};
+  }, [via, address, getAccessToken]);
 
   const [creators, setCreators] = useState<CreatorOption[]>([]);
   const [globalQuick, setGlobalQuick] = useState<number>(1);
@@ -58,8 +71,7 @@ export default function AllocationsPage() {
     setLoading(true);
     setError(null);
     try {
-      const token = await getAccessToken();
-      const res = await fetch("/api/allocations", { headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+      const res = await fetch("/api/allocations", { headers: await authHeaders() });
       if (!res.ok) throw new Error(`${res.status}`);
       const json = (await res.json()) as { globalQuickUsd: number; overrides: Override[] };
       setGlobalQuick(json.globalQuickUsd);
@@ -70,7 +82,7 @@ export default function AllocationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [authenticated, getAccessToken]);
+  }, [authenticated, authHeaders]);
 
   useEffect(() => {
     void load();

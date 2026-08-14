@@ -56,6 +56,30 @@ export async function resolveEmbeddedWallet(privyId: string): Promise<EmbeddedWa
 export async function verifyUser(req: Request): Promise<AppUser | null> {
   const auth = req.headers.get("authorization");
   const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+
+  // ---- wallet identity, DEMO ONLY --------------------------------------------
+  //
+  // When Privy is not configured there is no JWT to verify, so a connected wallet is the
+  // only session the app has. This accepts the address from a header so the local demo
+  // works end to end.
+  //
+  // Be clear about what this is: an unsigned address in a header is NOT authentication.
+  // Anyone can send any address and read that user's rows. It is acceptable only because
+  // it is fenced behind an env var that exists solely in .env.local, and the data behind
+  // it is seeded demo history.
+  //
+  // The real fix is Sign-In-With-Ethereum: have the wallet sign a nonce, verify the
+  // signature server-side, and issue a session. Until that exists, this flag must never
+  // be set in a deployed environment — which is why it is opt-in rather than a fallback
+  // that silently activates whenever Privy happens to be missing.
+  if (!token && process.env.ALLOW_UNSIGNED_WALLET_AUTH === "true") {
+    const address = req.headers.get("x-wallet-address");
+    if (address && /^0x[0-9a-fA-F]{40}$/.test(address)) {
+      return upsertUserByWallet(address.toLowerCase());
+    }
+    return null;
+  }
+
   if (!token) return null;
 
   let privyId: string;
@@ -91,4 +115,30 @@ export async function verifyUser(req: Request): Promise<AppUser | null> {
     .prepare("SELECT id, wallet_address FROM users WHERE privy_user_id=?")
     .get(privyId) as { id: number; wallet_address: string | null };
   return { userId: row.id, privyId, walletAddress: row.wallet_address };
+}
+
+/**
+ * Find or create the app user row for a wallet address.
+ *
+ * Used only by the demo wallet path above. `privy_user_id` is required and unique in the
+ * schema, so a synthetic namespaced id is stored rather than leaving it null — that keeps
+ * these rows distinguishable from genuine Privy users at a glance instead of silently
+ * mixing the two populations.
+ */
+function upsertUserByWallet(address: string): AppUser {
+  const db = getDb();
+  const syntheticId = `wallet:${address}`;
+
+  const existing = db
+    .prepare("SELECT id FROM users WHERE privy_user_id = ?")
+    .get(syntheticId) as { id: number } | undefined;
+
+  if (existing) return { userId: existing.id, privyId: syntheticId, walletAddress: address };
+
+  const now = Math.floor(Date.now() / 1000);
+  const res = db
+    .prepare("INSERT INTO users (privy_user_id, wallet_address, delegated, created_at) VALUES (?,?,?,?)")
+    .run(syntheticId, address, 0, now);
+
+  return { userId: Number(res.lastInsertRowid), privyId: syntheticId, walletAddress: address };
 }

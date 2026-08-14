@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePrivy, useWallets, useSigners, useFundWallet } from "@privy-io/react-auth";
+import { ConnectWallet } from "@/components/ConnectWallet";
 import { base, baseSepolia } from "viem/chains";
 import { useBalance, useReadContracts } from "wagmi";
 import { formatEther, formatUnits } from "viem";
@@ -166,7 +167,7 @@ export function Header() {
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
         <NetworkToggle network={network} onChange={setNetwork} />
 
-        {!ready && <span className="label flick">auth…</span>}
+        <ConnectWallet />
 
         {ready && !authenticated && (
           <button style={btnPrimary} onClick={() => login()}>Log in</button>
