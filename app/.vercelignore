@@ -1,0 +1,24 @@
+# Vercel uses this file (in preference to .gitignore) to decide what to upload.
+# .gitignore has a broad `*.db` rule that would drop the committed seed fixture
+# (seed/demo.db) that the deployed app needs — so we ignore selectively here.
+
+node_modules
+.next
+.vercel
+.git
+
+# Runtime SQLite DB + write-ahead artifacts (regenerated from the seed at runtime)
+gigabags.db
+gigabags.db-shm
+gigabags.db-wal
+
+# Stale seed WAL/shm sidecars — only the checkpointed seed/demo.db is needed
+seed/demo.db-wal
+seed/demo.db-shm
+
+# Local-only cruft
+*.tsbuildinfo
+scraped-*.json
+backups
+.probes
+.DS_Store

@@ -1,0 +1,20 @@
+{
+  "name": "sign-extension",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.7.0",
+    "@noble/secp256k1": "^2.2.0",
+    "viem": "^2.47.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

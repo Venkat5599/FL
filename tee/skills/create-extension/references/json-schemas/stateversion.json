@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StateVersion",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "stateVersion": { "type": "string", "pattern": "^0x[0-9a-fA-F]{64}$", "description": "bytes32 encoded as go-ethereum common.Hash (always 0x-prefixed, 66 chars total)" },
+    "state": { "description": "JSON-serializable value representing the extension's current state. Can be any valid JSON type (object, array, string, number, boolean, null)." }
+  },
+  "required": ["stateVersion", "state"],
+  "examples": [
+    {
+      "stateVersion": "0x302e312e30000000000000000000000000000000000000000000000000000000",
+      "state": { "hasKey": false, "version": "0.1.0" }
+    }
+  ]
+}

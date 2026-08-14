@@ -1,0 +1,30 @@
+# Per-Dockerfile .dockerignore for the sign extension (Python build).
+# Build context is the sign extension dir itself (extensions/sign/). The build
+# only needs python/ (the extension source) — tee-node is cloned from GitHub
+# during the build, so nothing else has to enter the context.
+
+# Ignore everything, then re-include just the python extension.
+*
+!python/
+
+# Python noise that must not leak into the image layer
+python/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+
+# IDE / VCS / OS noise
+**/.git
+**/.idea
+**/.vscode
+**/.DS_Store
+**/Thumbs.db
+**/.claude
+
+# Logs / temp files
+**/*.log
+**/*.tmp
+**/*.swp
+**/*.swo

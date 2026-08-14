@@ -1,0 +1,402 @@
+openapi: 3.0.3
+info:
+  title: TEE Node Sign Server API
+  version: "1.0.0"
+  description: |
+    OpenAPI specification for the TEE node sign server used by extensions.
+servers:
+  - url: http://localhost:{SIGN_PORT}
+    description: Local node sign server
+    variables:
+      SIGN_PORT:
+        default: "8882"
+paths:
+  /key-info/{walletID}/{keyID}:
+    get:
+      summary: Get key existence proof for a wallet key
+      parameters:
+        - name: walletID
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^(0x)?[0-9a-fA-F]{64}$'
+          description: 32-byte hex hash (0x optional)
+        - name: keyID
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Key identifier
+      responses:
+        '200':
+          description: Key existence proof
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyExistenceProof'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Wallet or key not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sign/{walletID}/{keyID}:
+    post:
+      summary: Sign a message with a specific wallet key
+      parameters:
+        - name: walletID
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^(0x)?[0-9a-fA-F]{64}$'
+        - name: keyID
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignRequest'
+      responses:
+        '200':
+          description: Signed message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Wallet or key not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Signing error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sign:
+    post:
+      summary: Sign a message with the TEE node's private key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignRequest'
+      responses:
+        '200':
+          description: Signed message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Signing error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /result:
+    post:
+      summary: Post ActionResult back to node (used for async processing)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './json-schemas/actionresult.json'
+      responses:
+        '200':
+          description: OK (empty body)
+        '400':
+          description: Invalid ActionResult JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Proxy/posting error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /decrypt/{walletID}/{keyID}:
+    post:
+      summary: Decrypt a message with a specific wallet key
+      parameters:
+        - name: walletID
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^(0x)?[0-9a-fA-F]{64}$'
+        - name: keyID
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecryptRequest'
+      responses:
+        '200':
+          description: Decrypted message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecryptResponse'
+        '400':
+          description: Invalid request or decryption failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Wallet or key not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /decrypt:
+    post:
+      summary: Decrypt a message with the TEE node's private key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecryptRequest'
+      responses:
+        '200':
+          description: Decrypted message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecryptResponse'
+        '400':
+          description: Invalid request or decryption failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    SignRequest:
+      type: object
+      additionalProperties: false
+      description: |
+        message is a byte array. In JSON it is serialized as a
+        base64 string, NOT hex. Use your language's standard JSON byte-array
+        encoding (e.g. Go []byte, Python bytes via base64, JS Buffer).
+      properties:
+        message:
+          type: string
+          format: byte
+          description: "Base64-encoded message bytes"
+      required: [message]
+      example:
+        message: "q83v"
+
+    SignResponse:
+      type: object
+      additionalProperties: false
+      description: |
+        message and signature are byte arrays. In JSON they are serialized as
+        base64 strings, NOT hex.
+      properties:
+        message:
+          type: string
+          format: byte
+          description: "Base64-encoded message bytes (echo of request)"
+        signature:
+          type: string
+          format: byte
+          description: "Base64-encoded signature bytes"
+      required: [message, signature]
+      example:
+        message: "q83v"
+        signature: "EIJK..."
+
+    DecryptRequest:
+      type: object
+      additionalProperties: false
+      description: |
+        encryptedMessage is a byte array. In JSON it is serialized as a
+        base64 string, NOT hex. Use your language's standard JSON byte-array
+        encoding (e.g. Go []byte, Python bytes via base64, JS Buffer).
+      properties:
+        encryptedMessage:
+          type: string
+          format: byte
+          description: "Base64-encoded ciphertext bytes (ECIES)"
+      required: [encryptedMessage]
+      example:
+        encryptedMessage: "BEpTnVt..."
+
+    DecryptResponse:
+      type: object
+      additionalProperties: false
+      description: |
+        decryptedMessage is a byte array. In JSON it is serialized as a
+        base64 string, NOT hex.
+      properties:
+        decryptedMessage:
+          type: string
+          format: byte
+          description: "Base64-encoded plaintext bytes"
+      required: [decryptedMessage]
+      example:
+        decryptedMessage: "2vNhig..."
+
+    KeyExistenceProof:
+      type: object
+      description: |
+        Returned by the tee-node sign server from GET /key-info/{walletID}/{keyID}.
+        Maps to the Go struct ITeeWalletKeyManagerKeyExistence (autogenerated,
+        no JSON tags — field names are PascalCase). Fixed-size [32]byte fields
+        are serialized as base64 by Go's encoding/json.
+      properties:
+        TeeId:
+          type: string
+          pattern: '^0x[0-9a-fA-F]{40}$'
+          description: "common.Address, 0x-prefixed hex"
+        WalletId:
+          type: string
+          format: byte
+          description: "Base64-encoded [32]byte"
+        KeyId:
+          type: integer
+          format: uint64
+        KeyType:
+          type: string
+          format: byte
+          description: "Base64-encoded [32]byte"
+        SigningAlgo:
+          type: string
+          format: byte
+          description: "Base64-encoded [32]byte"
+        PublicKey:
+          type: string
+          format: byte
+          description: "Base64-encoded []byte"
+        Nonce:
+          type: integer
+          description: "*big.Int, serialized as JSON number"
+        Restored:
+          type: boolean
+        ConfigConstants:
+          type: object
+          properties:
+            AdminsPublicKeys:
+              type: array
+              items:
+                type: object
+                properties:
+                  X:
+                    type: string
+                    format: byte
+                    description: "Base64-encoded [32]byte"
+                  Y:
+                    type: string
+                    format: byte
+                    description: "Base64-encoded [32]byte"
+                required: [X, Y]
+            AdminsThreshold:
+              type: integer
+              format: uint64
+            Cosigners:
+              type: array
+              items:
+                type: string
+                pattern: '^0x[0-9a-fA-F]{40}$'
+            CosignersThreshold:
+              type: integer
+              format: uint64
+          required: [AdminsPublicKeys, AdminsThreshold, Cosigners, CosignersThreshold]
+        SettingsVersion:
+          type: string
+          format: byte
+          description: "Base64-encoded [32]byte"
+        Settings:
+          type: string
+          format: byte
+          description: "Base64-encoded []byte"
+      required: [TeeId, WalletId, KeyId, KeyType, SigningAlgo, PublicKey, Nonce, Restored, ConfigConstants, SettingsVersion, Settings]
+      example:
+        TeeId: "0x1234567890abcdef1234567890abcdef12345678"
+        WalletId: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        KeyId: 0
+        KeyType: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        SigningAlgo: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        PublicKey: "AQID..."
+        Nonce: 0
+        Restored: false
+        ConfigConstants:
+          AdminsPublicKeys: []
+          AdminsThreshold: 0
+          Cosigners: []
+          CosignersThreshold: 0
+        SettingsVersion: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        Settings: ""

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ActionResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]{64}$" },
+    "submissionTag": { "type": "string" },
+    "status": { "type": "integer", "minimum": 0 },
+    "log": { "type": ["string", "null"] },
+    "opType": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]{64}$" },
+    "opCommand": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]{64}$" },
+    "additionalResultStatus": { "type": ["string", "null"] },
+    "version": { "type": "string" },
+    "data": { "oneOf": [ { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]*$" }, { "type": "null" } ] }
+  },
+  "required": ["id","submissionTag","status","opType","opCommand","version"],
+  "examples": [
+    {
+      "id": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      "submissionTag": "submit",
+      "status": 1,
+      "log": "action processed successfully",
+      "opType": "0x0001...",
+      "opCommand": "0x0001...",
+      "additionalResultStatus": "0x",
+      "data": "0xcafebabe"
+    }
+  ]
+}

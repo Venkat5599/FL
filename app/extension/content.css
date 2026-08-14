@@ -1,0 +1,276 @@
+/* GigaBags X/Twitter extension — theme-aware (Default / Dim / Lights out).
+   Theme is chosen in content.js by reading X's page background luminance and
+   setting data-kol-theme on <html>. Dark is the default until that runs.
+   All rules are scoped under kol- prefixed classnames. */
+
+.kol-card,
+.kol-btn {
+  /* dark defaults */
+  --kol-bg: #16181c;
+  --kol-panel: rgba(255, 255, 255, 0.05);
+  --kol-fg: #e7e9ea;
+  --kol-muted: #71767b;
+  --kol-border: rgba(255, 255, 255, 0.13);
+  --kol-green: #b9f73e;
+  --kol-pos: #7ee081;
+  --kol-neg: #f4212e;
+  --kol-warn: #ffb020;
+}
+:root[data-kol-theme="light"] .kol-card,
+:root[data-kol-theme="light"] .kol-btn {
+  --kol-bg: #ffffff;
+  --kol-panel: rgba(0, 0, 0, 0.035);
+  --kol-fg: #0f1419;
+  --kol-muted: #536471;
+  --kol-border: rgba(0, 0, 0, 0.12);
+  --kol-green: #5aa700;
+  --kol-pos: #17a34a;
+  --kol-neg: #e0245e;
+  --kol-warn: #b26a00;
+}
+
+/* ---- button in the profile action row ---- */
+.kol-btn-wrap {
+  display: inline-flex;
+  margin-left: 8px;
+  align-items: center;
+}
+.kol-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: var(--kol-fg);
+  background: var(--kol-bg);
+  border: 1px solid var(--kol-border);
+  border-radius: 9999px;
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.kol-btn:hover {
+  border-color: var(--kol-green);
+  background: var(--kol-panel);
+}
+.kol-btn .kol-mark {
+  color: var(--kol-green);
+  font-weight: 800;
+}
+
+/* ---- analytics card ---- */
+.kol-card {
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  margin: 12px 0;
+  padding: 0;
+  background: var(--kol-bg);
+  color: var(--kol-fg);
+  border: 1px solid var(--kol-border);
+  border-radius: 16px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+  animation: kolIn 0.18s ease-out both;
+}
+.kol-card *,
+.kol-btn * {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.kol-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--kol-border);
+}
+.kol-card .kol-mark {
+  color: var(--kol-green);
+  font-weight: 800;
+  font-size: 13px;
+}
+.kol-brand {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--kol-fg);
+}
+.kol-dismiss {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  color: var(--kol-muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 6px;
+}
+.kol-dismiss:hover {
+  color: var(--kol-fg);
+  background: var(--kol-panel);
+}
+
+.kol-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kol-headline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.kol-headline-num {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--kol-fg);
+}
+.kol-headline-label {
+  font-size: 11px;
+  color: var(--kol-muted);
+}
+
+.kol-stats-row {
+  display: flex;
+  border: 1px solid var(--kol-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.kol-stat {
+  flex: 1;
+  padding: 9px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.kol-stat + .kol-stat {
+  border-left: 1px solid var(--kol-border);
+}
+.kol-stat-num {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--kol-fg);
+}
+.kol-stat-label {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kol-muted);
+  white-space: nowrap;
+}
+
+.kol-latest {
+  background: var(--kol-panel);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.kol-latest-tag {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kol-muted);
+  margin-bottom: 5px;
+}
+.kol-latest-snippet {
+  font-size: 12px;
+  color: var(--kol-fg);
+  opacity: 0.92;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.kol-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.kol-verified {
+  font-size: 11px;
+  color: var(--kol-green);
+  font-weight: 600;
+}
+.kol-linkbtn,
+.kol-open {
+  color: var(--kol-fg);
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+.kol-open:hover,
+.kol-linkbtn:hover {
+  color: var(--kol-green);
+}
+
+.kol-pos {
+  color: var(--kol-pos) !important;
+}
+.kol-neg {
+  color: var(--kol-neg) !important;
+}
+.kol-warn {
+  color: var(--kol-warn) !important;
+}
+
+/* states */
+.kol-loading-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.kol-skel {
+  background: var(--kol-panel);
+  border-radius: 6px;
+  animation: kolPulse 1.2s ease-in-out infinite;
+}
+.kol-skel-lg {
+  height: 26px;
+  width: 55%;
+}
+.kol-skel-sm {
+  height: 12px;
+  width: 82%;
+}
+.kol-msg {
+  font-size: 12.5px;
+  color: var(--kol-muted);
+  padding: 0 0 2px;
+}
+.kol-actions {
+  display: flex;
+}
+.kol-retry {
+  color: var(--kol-green);
+}
+
+@keyframes kolPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+@keyframes kolIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kol-card { animation: none; }
+  .kol-skel { animation: none; }
+}

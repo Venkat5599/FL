@@ -1,0 +1,21 @@
+# Docker Compose override for Coston2 (chain_id=114) deployment.
+#
+# Usage:
+#   docker compose -f docker-compose.yaml -f docker-compose.coston2.yaml up -d
+services:
+  ext-proxy:
+    volumes:
+      - ./config/proxy/extension_proxy.coston2.docker.toml:/app/config/config.toml:ro
+
+  extension-tee:
+    environment:
+      - CHAIN_URL=${CHAIN_URL:-https://coston2-api.flare.network/ext/C/rpc}
+      # Coston2 chain id. The node binds every signature to this value; it must
+      # match the proxy's chain_id and the on-chain registry, or signature
+      # verification fails (InvalidTeePublicKeyOrSignature / proxy panic).
+      - CHAIN_ID=${CHAIN_ID:-114}
+
+networks:
+  default:
+    name: ${COMPOSE_NETWORK:-sign-coston2}
+    external: false

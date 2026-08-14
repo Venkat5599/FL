@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# test.sh — Send instructions on-chain, poll for results, and validate correctness.
+#
+# Run this AFTER post-build.sh (TEE machine must be registered and running).
+#
+# Inputs (env vars):
+#   EXT_PROXY_URL       — extension proxy URL (auto-detected: :6674 for Docker, :6664 for local)
+#   CHAIN_URL           — chain RPC URL (default: http://127.0.0.1:8545)
+#   ADDRESSES_FILE      — path to deployed-addresses.json (auto-detected if unset)
+#   INSTRUCTION_SENDER  — deployed InstructionSender address (from config/extension.env)
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'; NC='\033[0m'
+log()  { echo -e "${GREEN}[test]${NC} $*"; }
+step() { echo -e "\n${CYAN}=== Step $1: $2 ===${NC}"; }
+die()  { echo -e "${RED}[test] ERROR:${NC} $*" >&2; exit 1; }
+
+if [[ -f "$PROJECT_DIR/.env" ]]; then
+    set -a
+    source "$PROJECT_DIR/.env"
+    set +a
+fi
+
+CONFIG_FILE="$PROJECT_DIR/config/extension.env"
+if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE"
+    log "Loaded config from $CONFIG_FILE"
+fi
+
+if [[ -z "${EXT_PROXY_URL:-}" ]]; then
+    if docker compose ps ext-proxy --status running 2>/dev/null | grep -q ext-proxy; then
+        EXT_PROXY_URL="http://localhost:6674"
+    else
+        EXT_PROXY_URL="http://localhost:6664"
+    fi
+fi
+CHAIN_URL="${CHAIN_URL:-http://127.0.0.1:8545}"
+ADDRESSES_FILE="${ADDRESSES_FILE:-}"
+if [[ -n "$ADDRESSES_FILE" && "$ADDRESSES_FILE" != /* ]]; then
+    ADDRESSES_FILE="$PROJECT_DIR/$ADDRESSES_FILE"
+fi
+INSTRUCTION_SENDER="${INSTRUCTION_SENDER:-}"
+
+[[ -n "$INSTRUCTION_SENDER" ]] || die "INSTRUCTION_SENDER not set. Run pre-build.sh first or set it manually."
+
+LOCAL_MODE="${LOCAL_MODE:-true}"
+if [[ -z "$ADDRESSES_FILE" ]]; then
+    CHAIN="${CHAIN:-}"
+    if [[ -z "$CHAIN" ]]; then
+        [[ "$LOCAL_MODE" == "true" ]] && CHAIN="local" || CHAIN="coston2"
+    fi
+    case "$CHAIN" in
+        coston)  candidate="$PROJECT_DIR/config/coston/deployed-addresses.json" ;;
+        coston2) candidate="$PROJECT_DIR/config/coston2/deployed-addresses.json" ;;
+        *)       candidate="" ;;
+    esac
+    if [[ -n "$candidate" && -f "$candidate" ]]; then
+        ADDRESSES_FILE="$(cd "$(dirname "$candidate")" && pwd)/$(basename "$candidate")"
+    fi
+
+    if [[ -z "$ADDRESSES_FILE" ]]; then
+        for candidate in \
+            "$PROJECT_DIR/../../e2e/docker/sim_dump/deployed-addresses.json" \
+            "$PROJECT_DIR/../docker/sim_dump/deployed-addresses.json" \
+            "$PROJECT_DIR/../../docker/sim_dump/deployed-addresses.json" \
+            "$PROJECT_DIR/../../../docker/sim_dump/deployed-addresses.json"; do
+            if [[ -f "$candidate" ]]; then
+                ADDRESSES_FILE="$(cd "$(dirname "$candidate")" && pwd)/$(basename "$candidate")"
+                break
+            fi
+        done
+    fi
+
+    [[ -n "$ADDRESSES_FILE" ]] || die "Cannot find deployed-addresses.json. Set ADDRESSES_FILE."
+fi
+
+[[ -f "$ADDRESSES_FILE" ]] || die "Addresses file not found: $ADDRESSES_FILE"
+ADDRESSES_FILE="$(cd "$(dirname "$ADDRESSES_FILE")" && pwd)/$(basename "$ADDRESSES_FILE")"
+
+log "Extension proxy:    $EXT_PROXY_URL"
+log "Chain URL:          $CHAIN_URL"
+log "Addresses file:     $ADDRESSES_FILE"
+log "InstructionSender:  $INSTRUCTION_SENDER"
+
+if ! curl -sf -o /dev/null "$EXT_PROXY_URL/info" 2>/dev/null; then
+    die "Extension proxy not reachable at $EXT_PROXY_URL. Is Docker Compose running? (docker compose up -d)"
+fi
+log "Extension proxy is reachable"
+
+step 1 "Run extension tests"
+cd "$PROJECT_DIR/go/tools"
+go run ./cmd/run-test \
+    -a "$ADDRESSES_FILE" \
+    -c "$CHAIN_URL" \
+    -p "$EXT_PROXY_URL" \
+    -instructionSender "$INSTRUCTION_SENDER" \
+    || die "Test failed"
+
+echo ""
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN} Tests passed${NC}"
+echo -e "${GREEN}========================================${NC}"

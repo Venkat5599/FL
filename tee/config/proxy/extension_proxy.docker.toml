@@ -1,0 +1,34 @@
+# Docker-specific proxy config.
+# ext-proxy runs in a separate compose from the infrastructure. It reaches
+# infrastructure services (indexer-db, blockchain node) via host.docker.internal.
+redis_port = "redis:6379"
+private_key_variable = "PROXY_PRIVATE_KEY"
+initial_signing_policy_offset = 0
+signing_policy_fetch_interval = "20s"
+
+chain_id = 114
+
+[db]
+host = "host.docker.internal"
+port = 3306
+database = "db"
+username = "root"
+password = "root"
+log_queries = false
+
+[addresses]
+flare_systems_manager = "0xa4bcDF64Cdd5451b6ac3743B414124A6299B65FF"
+relay = "0x5A0773Ff307Bf7C71a832dBB5312237fD3437f9F"
+voter_registry = "0xB00cC45B4a7d3e1FEE684cFc4417998A1c183e6d"
+
+[ports]
+internal = "6663"
+external = "6664"
+
+[info_timing]
+cycle_internal = "10s"
+cycle_queue_response_wait = "2s"
+
+[voting]
+proposal_expiration = "12s"
+max_pending_request = 10000

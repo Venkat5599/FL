@@ -1,0 +1,58 @@
+# ---- secrets ---------------------------------------------------------------
+# Every .env is excluded, with no exceptions carved out. The FCC scaffold ships
+# .env.coston / .env.coston2 containing demo DEPLOYMENT_PRIVATE_KEY values; those are
+# public upstream, but a key committed to this repo would look like ours and would be
+# indistinguishable from a real one at a glance. Use .env.example (also excluded here) as
+# the reference and keep real values out of git entirely.
+.env
+.env.*
+*.pem
+*.key
+
+# ---- dependencies ----------------------------------------------------------
+node_modules/
+.pnp
+.pnp.js
+
+# ---- build output ----------------------------------------------------------
+.next/
+out/
+dist/
+build/
+cache/
+*.tsbuildinfo
+next-env.d.ts
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/forge-std/
+
+# ---- local databases -------------------------------------------------------
+# The committed seed (app/seed/demo.db) is deliberately NOT ignored — it is what makes
+# the demo runnable on a clean clone. Working databases are.
+*.db
+!app/seed/demo.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ---- generated FCC deployment state ----------------------------------------
+# Written by pre-build.sh / post-build.sh and specific to one deployment.
+tee/config/extension.env
+tee/config/proxy/extension_proxy.*.docker.toml
+
+# Git metadata from the upstream fce-sign reference clone, kept locally for provenance
+# but not part of this repository.
+tee/.upstream-git-ref/
+
+# ---- misc ------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.vercel
+coverage/
+.idea/
+.vscode/

@@ -1,0 +1,31 @@
+# Per-Dockerfile .dockerignore for the sign extension (Go build).
+# Build context is the sign extension dir itself (extensions/sign/). The Go
+# Dockerfile only needs the go/ module — tee-node is fetched from the network
+# during `go mod download`, so nothing else has to enter the build context.
+
+# Ignore everything, then re-include just the Go module.
+*
+!go/
+
+# Generated bindings, the dev-machine tooling module, and build output aren't
+# needed to compile ./cmd/docker.
+go/tools
+
+# Heavy / vendored / generated (in case any slip under go/)
+**/node_modules
+**/out
+**/vendor
+
+# IDE / VCS / OS noise
+**/.git
+**/.idea
+**/.vscode
+**/.DS_Store
+**/Thumbs.db
+**/.claude
+
+# Logs / temp files
+**/*.log
+**/*.tmp
+**/*.swp
+**/*.swo

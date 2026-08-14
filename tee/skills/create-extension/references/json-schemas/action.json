@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Action",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(0x)?[0-9a-fA-F]{64}$",
+          "description": "bytes32 hex string"
+        },
+        "type": { "type": "string" },
+        "submissionTag": { "type": "string" },
+        "message": { "type": "string", "description": "Hex-encoded JSON bytes of DataFixed. Decode: hex-decode to bytes, then JSON-parse." }
+      },
+      "required": ["id","type","submissionTag","message"]
+    },
+    "additionalVariableMessages": { "type": "array", "items": { "type": "string" } },
+    "timestamps": { "type": "array", "items": { "type": "integer" } },
+    "additionalActionData": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]*$" },
+    "signatures": { "type": "array", "items": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]+$" } }
+  },
+  "required": ["data"],
+  "examples": [
+    {
+      "data": {
+        "id": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+        "type": "instruction",
+        "submissionTag": "submit",
+        "message": "{\"instructionId\":\"0xabcd...\",\"teeId\":\"0x1234...\",\"timestamp\":1234567890,\"rewardEpochId\":1,\"opType\":\"0x0001...\",\"opCommand\":\"0x0001...\",\"cosigners\":[\"0xaaaa...\"],\"cosignersThreshold\":1,\"originalMessage\":\"0xdeadbeef\",\"additionalFixedMessage\":\"0x\"}"
+      },
+      "additionalVariableMessages": [],
+      "timestamps": [1234567890],
+      "additionalActionData": "0x",
+      "signatures": []
+    }
+  ]
+}

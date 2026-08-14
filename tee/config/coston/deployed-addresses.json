@@ -1,0 +1,467 @@
+[
+  {
+    "name": "Submission",
+    "contractName": "Submission.sol",
+    "address": "0x2cA6571Daa15ce734Bbd0Bf27D5C9D16787fc33f"
+  },
+  {
+    "name": "EntityManager",
+    "contractName": "EntityManager.sol",
+    "address": "0x60A848E5Da796D741e559c170E851FC813061217"
+  },
+  {
+    "name": "VoterRegistry",
+    "contractName": "VoterRegistry.sol",
+    "address": "0x42F4526BFC6f892DB515a832a52eFc9edFADf6c0"
+  },
+  {
+    "name": "FlareSystemsCalculator",
+    "contractName": "FlareSystemsCalculator.sol",
+    "address": "0x3787dCBD770202F856ED9204c19d6f9022Ff3BF2"
+  },
+  {
+    "name": "FlareSystemsManager",
+    "contractName": "FlareSystemsManager.sol",
+    "address": "0x85680Dd93755Fe5d0789773fd0896cEE51F9e358"
+  },
+  {
+    "name": "RewardManager",
+    "contractName": "RewardManager.sol",
+    "address": "0x2ade9972E7f27200872D378acF7a1BaD8D696FC5"
+  },
+  {
+    "name": "Relay",
+    "contractName": "Relay.sol",
+    "address": "0x051f214D346Cfd97B107BECb87E2B35D1b4287E9"
+  },
+  {
+    "name": "WNatDelegationFee",
+    "contractName": "WNatDelegationFee.sol",
+    "address": "0xD6f2DC0A3433613d3d0Ee1d764e22631cCF175C8"
+  },
+  {
+    "name": "FtsoInflationConfigurations",
+    "contractName": "FtsoInflationConfigurations.sol",
+    "address": "0x4f634084483dE74cd4b69007fdF1DaeCC7354991"
+  },
+  {
+    "name": "FtsoRewardOffersManager",
+    "contractName": "FtsoRewardOffersManager.sol",
+    "address": "0xC9534cB913150aD3e98D792857689B55e2404212"
+  },
+  {
+    "name": "FtsoFeedDecimals",
+    "contractName": "FtsoFeedDecimals.sol",
+    "address": "0xC24bca265667CD2ABC412554FD39722cbaf78a4f"
+  },
+  {
+    "name": "FtsoFeedPublisher",
+    "contractName": "FtsoFeedPublisher.sol",
+    "address": "0x595AbCc4f9330b30ca31966dFfF71EBE0Af2b820"
+  },
+  {
+    "name": "FtsoFeedIdConverter",
+    "contractName": "FtsoFeedIdConverter.sol",
+    "address": "0x5c871668b17B604c0CAA848D8Efa7D9094748BC8"
+  },
+  {
+    "name": "FastUpdateIncentiveManager",
+    "contractName": "FastUpdateIncentiveManager.sol",
+    "address": "0x8c45666369B174806E1AB78D989ddd79a3267F3b"
+  },
+  {
+    "name": "FastUpdater",
+    "contractName": "FastUpdater.sol",
+    "address": "0xB8336A96b4b8af89f60EA080002214191Bc8293A"
+  },
+  {
+    "name": "FastUpdatesConfiguration",
+    "contractName": "FastUpdatesConfiguration.sol",
+    "address": "0x9A53e14B58383642cdB2bb4D5C46989F05C6B5f9"
+  },
+  {
+    "name": "FdcHub",
+    "contractName": "FdcHub.sol",
+    "address": "0x1c78A073E3BD2aCa4cc327d55FB0cD4f0549B55b"
+  },
+  {
+    "name": "FdcInflationConfigurations",
+    "contractName": "FdcInflationConfigurations.sol",
+    "address": "0x8807adc15496Ef8F89CdFEfce19001a10878ACaF"
+  },
+  {
+    "name": "FdcRequestFeeConfigurations",
+    "contractName": "FdcRequestFeeConfigurations.sol",
+    "address": "0x2bBfb46aC3A71A6725699004B8a8fE4C928E7108"
+  },
+  {
+    "name": "FdcVerification",
+    "contractName": "FdcVerificationProxy.sol",
+    "address": "0x30DAB57c409E1e18c8B00dC351Bf568953D607B1"
+  },
+  {
+    "name": "FtsoRewardManager",
+    "contractName": "FtsoRewardManagerProxy.sol",
+    "address": "0x332b2B083f20504588Dd0624D6fd14379b692FAb"
+  },
+  {
+    "name": "PollingFoundation",
+    "contractName": "PollingFoundation.sol",
+    "address": "0x2E6E089da48214C955aD1f8f88ac19EBE1ca5eFC"
+  },
+  {
+    "name": "FeeCalculator",
+    "contractName": "FeeCalculator.sol",
+    "address": "0x08e0CBdc9173e537208CEAd8c38f263517f54F22"
+  },
+  {
+    "name": "FtsoManager",
+    "contractName": "FtsoManagerProxy.sol",
+    "address": "0x9E10Ca7D1EA3c6f50071d20bde95608b93D2efe1"
+  },
+  {
+    "name": "FtsoCFlr",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x935B0248fA936Be2990826a91Af03273A38b42d6"
+  },
+  {
+    "name": "FtsoTestXrp",
+    "contractName": "FtsoProxy.sol",
+    "address": "0xDDa2e39088f26aACc5A9C6e232799cfE821Fe144"
+  },
+  {
+    "name": "FtsoTestLtc",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x92f8d62027E1d70C74F770FBB62Ac33baFA033e9"
+  },
+  {
+    "name": "FtsoTestXlm",
+    "contractName": "FtsoProxy.sol",
+    "address": "0xCd0198B89eb631f278e1C5f828B12D73548584C2"
+  },
+  {
+    "name": "FtsoTestDoge",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x1378FAfD13625B220Fd7D2623bCbAD31F2124561"
+  },
+  {
+    "name": "FtsoTestAda",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x4dC7DbC340DEc9009Bc05585717022f2581b2108"
+  },
+  {
+    "name": "FtsoTestAlgo",
+    "contractName": "FtsoProxy.sol",
+    "address": "0xd5bBEe08bB5f4ABbDd603E77a9c341519FA05FdE"
+  },
+  {
+    "name": "FtsoTestBtc",
+    "contractName": "FtsoProxy.sol",
+    "address": "0xB68e0ce6BA93C7473c1896767E03f886509FBA02"
+  },
+  {
+    "name": "FtsoTestEth",
+    "contractName": "FtsoProxy.sol",
+    "address": "0xAD30A68A3b0ef88b8b3037f0f6986Cfaa0D9bf58"
+  },
+  {
+    "name": "FtsoTestFil",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x221C956EFbF9e9D87D6924cb82D823519bfB235C"
+  },
+  {
+    "name": "FtsoTestArb",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x0dc94526c8B26De3dEBB7b653D47bBFa15DaC9Df"
+  },
+  {
+    "name": "FtsoTestAvax",
+    "contractName": "FtsoProxy.sol",
+    "address": "0xC75da1c263bC3f2f05960e49026e2c0C5E72BbfA"
+  },
+  {
+    "name": "FtsoTestBnb",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x73289BC55F0e6C600d219cb75f77f44187cD9a39"
+  },
+  {
+    "name": "FtsoTestMatic",
+    "contractName": "FtsoProxy.sol",
+    "address": "0xC925F31E5c58cE11CD17002703C342169a4149bb"
+  },
+  {
+    "name": "FtsoTestPol",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x6a61901C41a5697BF34dD706EC36AD00848eB95F"
+  },
+  {
+    "name": "FtsoTestSol",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x308Cd303FCbF2c3d9F4B806d4172b8Adb0c57Da0"
+  },
+  {
+    "name": "FtsoTestUsdc",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x38f415402F7FE8bF5645D6D778cC1C2637Aa44C7"
+  },
+  {
+    "name": "FtsoTestUsdt",
+    "contractName": "FtsoProxy.sol",
+    "address": "0x4f7c686342B3979a6AB0CD1E7204AD575AfA6735"
+  },
+  {
+    "name": "FtsoTestXdc",
+    "contractName": "FtsoProxy.sol",
+    "address": "0xDf259E0219092346d26c4Adb92b322DA27447BBC"
+  },
+  {
+    "name": "FtsoV2",
+    "contractName": "FtsoV2Proxy.sol",
+    "address": "0x787C2AbB211dbC5F9B239288701a3dd5ae3Af1A2"
+  },
+  {
+    "name": "PriceSubmitter",
+    "contractName": "PriceSubmitterProxy.sol",
+    "address": "0x2ADC05f9c85149274266fFeD348C705622858820"
+  },
+  {
+    "name": "VoterWhitelister",
+    "contractName": "VoterWhitelisterProxy.sol",
+    "address": "0x6b9d022224c11446Ad7D373F5BaF6271200FdA1f"
+  },
+  {
+    "name": "VoterPreRegistry",
+    "contractName": "VoterPreRegistry.sol",
+    "address": "0x4A5538e86bc09cc1b02BAE720CCc39548e10dB28"
+  },
+  {
+    "name": "PollingManagementGroup",
+    "contractName": "PollingManagementGroup.sol",
+    "address": "0xAcea7c7F4c906c8122D31DD06cF84Aa0d7E89fd0"
+  },
+  {
+    "name": "FtsoV2Implementation",
+    "contractName": "FtsoV2.sol",
+    "address": "0x05cd506C97f067aA219BfA7240EF2316Cc6cCadD"
+  },
+  {
+    "name": "FdcVerificationImplementation",
+    "contractName": "FdcVerification.sol",
+    "address": "0x847Dc05E735506CB737D3403Ab131A21e07E689F"
+  },
+  {
+    "name": "DiamondGovernanceFacet",
+    "contractName": "DiamondGovernanceFacet.sol",
+    "address": "0x7685483aC061c31b6730d2ab9bd5988fB7921882"
+  },
+  {
+    "name": "DiamondLoupeFacet",
+    "contractName": "DiamondLoupeFacet.sol",
+    "address": "0xc4518c9219977Aa8BE9222eE4bae95E6d8615ACF"
+  },
+  {
+    "name": "ExtensionManagerFacet",
+    "contractName": "ExtensionManagerFacet.sol",
+    "address": "0x7647Fe4ED218996121d807B87D532fE1b30462AA"
+  },
+  {
+    "name": "InstructionsFacet",
+    "contractName": "InstructionsFacet.sol",
+    "address": "0xBB4861569295119E7Db1068450e495BB8D16d127"
+  },
+  {
+    "name": "MachineManagerFacet",
+    "contractName": "MachineManagerFacet.sol",
+    "address": "0x990e7E9d965Ab5b76814C7d2C35A439d05ace417"
+  },
+  {
+    "name": "VerificationFacet",
+    "contractName": "VerificationFacet.sol",
+    "address": "0x0Aa3b1DAbB976F976f19ce3a0fF00F41B8DAf0C7"
+  },
+  {
+    "name": "OperationFeesFacet",
+    "contractName": "OperationFeesFacet.sol",
+    "address": "0x68640A86fa72C1Ac7F599518C291ee7aBEca7eBf"
+  },
+  {
+    "name": "OwnerAllowlistFacet",
+    "contractName": "OwnerAllowlistFacet.sol",
+    "address": "0x7AAe482747D6dDb674bEB7f74Bd10B72ca66cc1A"
+  },
+  {
+    "name": "WalletManagerFacet",
+    "contractName": "WalletManagerFacet.sol",
+    "address": "0x7f43283ddb8cA0056CD095963c56143136F96021"
+  },
+  {
+    "name": "WalletKeyManagerFacet",
+    "contractName": "WalletKeyManagerFacet.sol",
+    "address": "0xB527748241c87FF398deca22f8e97D1be3316A10"
+  },
+  {
+    "name": "WalletProjectManagerFacet",
+    "contractName": "WalletProjectManagerFacet.sol",
+    "address": "0xD1936CFfF26B5dD888DFe5e3E88b1cCF58b4d3d2"
+  },
+  {
+    "name": "WalletBackupManagerFacet",
+    "contractName": "WalletBackupManagerFacet.sol",
+    "address": "0xFC43Dc775124168455749c43632E1184a381c47B"
+  },
+  {
+    "name": "VrfFacet",
+    "contractName": "VrfFacet.sol",
+    "address": "0x1Bc25c04DdBa50cDa6660990D41f17C349221261"
+  },
+  {
+    "name": "ExternalAddressesFacet",
+    "contractName": "ExternalAddressesFacet.sol",
+    "address": "0x5253E8686E92613C7fc54B1c4a40C1612d7582b8"
+  },
+  {
+    "name": "ExtensionGovernanceFacet",
+    "contractName": "ExtensionGovernanceFacet.sol",
+    "address": "0xFa9e2f76f5F04A4Cab9D21b16DeF81B668BE0257"
+  },
+  {
+    "name": "MachinePathManagerFacet",
+    "contractName": "MachinePathManagerFacet.sol",
+    "address": "0x871EdA7Ae387C7ACDdA60dD321Ff33363f51E473"
+  },
+  {
+    "name": "WalletProjectPauseFacet",
+    "contractName": "WalletProjectPauseFacet.sol",
+    "address": "0x9651c0ccB8292C5E63f3aF546D5DEe4A2d4F665d"
+  },
+  {
+    "name": "MachineEmergencyPauseFacet",
+    "contractName": "MachineEmergencyPauseFacet.sol",
+    "address": "0xA459d9380B1976Add53A36e2921325359954f9b0"
+  },
+  {
+    "name": "FlareTeeManagerInit",
+    "contractName": "FlareTeeManagerInit.sol",
+    "address": "0x543FB437225B349B21Ec17DC75A2F96B67589Cdd"
+  },
+  {
+    "name": "FlareTeeManager",
+    "contractName": "FlareTeeManager.sol",
+    "address": "0xc4885998f5D792ed88C5Af7a3AaCBe333f017658"
+  },
+  {
+    "name": "Fdc2HubImplementation",
+    "contractName": "Fdc2Hub.sol",
+    "address": "0x5744801e4Eb76f67Ed34eA4bdB78ec6cdf90Fc1C"
+  },
+  {
+    "name": "Fdc2Hub",
+    "contractName": "Fdc2HubProxy.sol",
+    "address": "0x064C7B68B0e2BC87e7bE34e89741485Fcb48FA2F"
+  },
+  {
+    "name": "Fdc2RequestFeeConfigurationsImplementation",
+    "contractName": "Fdc2RequestFeeConfigurations.sol",
+    "address": "0xD23A429D8BdADD711126BA64865624bF0529b66C"
+  },
+  {
+    "name": "Fdc2RequestFeeConfigurations",
+    "contractName": "Fdc2RequestFeeConfigurationsProxy.sol",
+    "address": "0xEf3001923213f01993f7864fe9f37565AB9B2f16"
+  },
+  {
+    "name": "Fdc2VerificationImplementation",
+    "contractName": "Fdc2Verification.sol",
+    "address": "0xb332dd09Bfa76c7e1C0410C0b763Bf355A465d55"
+  },
+  {
+    "name": "Fdc2Verification",
+    "contractName": "Fdc2VerificationProxy.sol",
+    "address": "0x21D3842E39A3b62ba15CD8A5D2ED5cEDea931502"
+  },
+  {
+    "name": "TeePaymentsRegistryImplementation",
+    "contractName": "TeePaymentsRegistry.sol",
+    "address": "0x87B6BF38dF000b937EdCe941a1Be584b507f9B27"
+  },
+  {
+    "name": "TeePaymentsRegistry",
+    "contractName": "TeePaymentsRegistryProxy.sol",
+    "address": "0xA02728ba2b6E7A9f8f7E6B17cA924700371C38C5"
+  },
+  {
+    "name": "TeePaymentsConfigVerifierImplementation",
+    "contractName": "TeePaymentsConfigVerifier.sol",
+    "address": "0x23fDDc567787eeDd976793E028B51e8f3C2cC9F2"
+  },
+  {
+    "name": "TeePaymentsConfigVerifier",
+    "contractName": "TeePaymentsConfigVerifierProxy.sol",
+    "address": "0x2C7477C0D1D517421F07173dC5D1729ff83DeA03"
+  },
+  {
+    "name": "AddressValidatorImplementation",
+    "contractName": "AddressValidator.sol",
+    "address": "0xBB910ebf4f6597c681CEcCaeDc222A4Ab29c8645"
+  },
+  {
+    "name": "AddressValidator",
+    "contractName": "AddressValidatorProxy.sol",
+    "address": "0xba645C7Fc9FEfB158238caDd09D6FC62CF6d8393"
+  },
+  {
+    "name": "TeePaymentsImplementation",
+    "contractName": "TeePayments.sol",
+    "address": "0x1A5cb9E237511dbcC5E52314E9B31D8193462F6F"
+  },
+  {
+    "name": "TeePayments",
+    "contractName": "TeePaymentsProxy.sol",
+    "address": "0x04Deb25b5bdaf95B7080E4d04cAD73Cc0A2f50d9"
+  },
+  {
+    "name": "TeePaymentsFeeScheduleManagerImplementation",
+    "contractName": "TeePaymentsFeeScheduleManager.sol",
+    "address": "0xC72cD8A1a9FF26FfeBA9880C1F829E04973b2aFe"
+  },
+  {
+    "name": "TeePaymentsFeeScheduleManager",
+    "contractName": "TeePaymentsFeeScheduleManagerProxy.sol",
+    "address": "0x8890f9371b0DeB1DaB669CAAD167C281c65A2426"
+  },
+  {
+    "name": "TeeRewardOffersManagerImplementation",
+    "contractName": "TeeRewardOffersManager.sol",
+    "address": "0x1D2F1B2DC12aD77f30EB4F0D80064357Fb80bbcA"
+  },
+  {
+    "name": "TeeRewardOffersManager",
+    "contractName": "TeeRewardOffersManagerProxy.sol",
+    "address": "0xFEab21604504EF84d51266784b415dD2A2850230"
+  },
+  {
+    "name": "Fdc2InflationConfigurationsImplementation",
+    "contractName": "Fdc2InflationConfigurations.sol",
+    "address": "0xE01A1Ce4006d462EFe1e2702715fE4A36FedB4C7"
+  },
+  {
+    "name": "Fdc2InflationConfigurations",
+    "contractName": "Fdc2InflationConfigurationsProxy.sol",
+    "address": "0xa7F8F718535CA2BCEDAb9810489E4B0B629E40D0"
+  },
+  {
+    "name": "Fdc2RewardOffersManagerImplementation",
+    "contractName": "Fdc2RewardOffersManager.sol",
+    "address": "0xC046e6C25835aBDC10BA6A03ea803002205B3e1b"
+  },
+  {
+    "name": "Fdc2RewardOffersManager",
+    "contractName": "Fdc2RewardOffersManagerProxy.sol",
+    "address": "0x66918C0ea1e3aD88a6a91bf6e54Fcce545aF1496"
+  },
+  {
+    "name": "VrfVerifier",
+    "contractName": "VrfVerifier.sol",
+    "address": "0xFf7B15d253b3C62C2eC689aF5696c9Ee91aB6Fff"
+  }
+]

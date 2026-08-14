@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DataFixed",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "instructionId": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]{64}$" },
+    "teeId": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]{40}$" },
+    "timestamp": { "type": "integer" },
+    "rewardEpochId": { "type": "integer" },
+    "opType": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]{64}$" },
+    "opCommand": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]{64}$" },
+    "cosigners": { "type": "array", "items": { "type": "string", "pattern": "^(0x)?[0-9a-fA-F]{40}$" } },
+    "cosignersThreshold": { "type": "integer" },
+    "originalMessage": { "type": "string", "description": "hex string (0x optional)" },
+    "additionalFixedMessage": { "type": "string", "description": "hex string (0x optional)" }
+  },
+  "required": ["instructionId","teeId","timestamp","opType","opCommand"],
+  "examples": [
+    {
+      "instructionId": "0xabcd000000000000000000000000000000000000000000000000000000000000",
+      "teeId": "0x1234000000000000000000000000000000000000",
+      "timestamp": 1234567890,
+      "rewardEpochId": 1,
+      "opType": "0x5341595f48454c4c4f0000000000000000000000000000000000000000000000",
+      "opCommand": "0x504c414345484f4c444552000000000000000000000000000000000000000000",
+      "cosigners": ["0xaaaa..."],
+      "cosignersThreshold": 1,
+      "originalMessage": "0xdeadbeef",
+      "additionalFixedMessage": "0x"
+    }
+  ]
+}
