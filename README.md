@@ -85,6 +85,20 @@ FDC commits the **entire** Web2Json `requestBody` on-chain — url, headers, eve
 
 So the token never travels with the attestation. It sits behind a minimal read proxy (`app/app/api/x-post/[id]/route.ts`) and FDC attests *that* endpoint. This is one trusted hop and we say so in the submission rather than describing the path as trustless. The proxy is deliberately incapable of much: fixed upstream host, numeric-id-only input, no interpretation, four fields out.
 
+## Live on Coston2
+
+| Contract | Address |
+|---|---|
+| `PostRegistry` | `0xEDF2563179809B328129a76dEeE90dB296195BcF` |
+| `CallTape` | `0xFBCaAB36Ea0dB02960B202c324cB777f6eb5dA7F` |
+| `TapeInstructionSender` | `0xAbC7414410528d40fd32e7649F3729F82939Aa07` |
+
+App: https://app-f6zaxplae-venkat5599s-projects.vercel.app
+
+The FTSOv2 integration is proven live — the XRP/USD feed id this repo derives returns a
+real price from the deployed oracle. See [`docs/SUBMISSION.md`](docs/SUBMISSION.md) for
+the verification transcript and for what remains unproven.
+
 ## Status
 
 197 tests passing. Contracts compile clean with zero warnings. No 0G, The Graph or Uniswap code remains — those modules and their tests were deleted, not left dormant.

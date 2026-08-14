@@ -154,7 +154,42 @@ Stated plainly, because overclaiming here is worse than an incomplete submission
 
 ## Deployment
 
-Coston2 (chain 114). Addresses will be listed here once the funding and credential blockers clear.
+**Live on Coston2 (chain 114).** Deployed 2026-08-14.
+
+| Contract | Address |
+|---|---|
+| `PostRegistry` | [`0xEDF2563179809B328129a76dEeE90dB296195BcF`](https://coston2-explorer.flare.network/address/0xEDF2563179809B328129a76dEeE90dB296195BcF) |
+| `CallTape` | [`0xFBCaAB36Ea0dB02960B202c324cB777f6eb5dA7F`](https://coston2-explorer.flare.network/address/0xFBCaAB36Ea0dB02960B202c324cB777f6eb5dA7F) |
+| `TapeInstructionSender` | [`0xAbC7414410528d40fd32e7649F3729F82939Aa07`](https://coston2-explorer.flare.network/address/0xAbC7414410528d40fd32e7649F3729F82939Aa07) |
+
+Flare system contracts used (resolved at runtime, never hardcoded):
+
+| Contract | Address | How it is reached |
+|---|---|---|
+| `FlareContractRegistry` | `0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019` | the one fixed address; identical on all four networks |
+| `FtsoV2` | `0xC4e9c78EA53db782E28f28Fdf80BaF59336B304d` | `getContractAddressByName("FtsoV2")` |
+| `FlareTeeManager` | `0x1a9C4A0f9D76c0b1D91d22E24E573a9b377618aE` | diamond proxy serving both the ExtensionManager and MachineManager facets, so it is both TEE registry addresses |
+
+**Web app:** https://app-f6zaxplae-venkat5599s-projects.vercel.app
+
+### Verified live on-chain after deployment
+
+```
+CallTape.POST_REGISTRY  = 0xEDF2563179809B328129a76dEeE90dB296195BcF   -> bound to the evidence layer
+CallTape.verdictWriter  = 0xAbC7414410528d40fd32e7649F3729F82939Aa07   -> only the TEE path may write verdicts
+CallTape.maxFeedAge     = 300                                          -> staleness guard active
+Sender.OP_TYPE_SCORE    = 0x53434f5245...                              -> "SCORE"
+```
+
+**The FTSOv2 link is proven end-to-end.** Reading the XRP/USD feed id this codebase *derives* (`0x015852502f55534400000000000000000000000000`) against the live oracle returns a real value:
+
+```
+getFeedByIdInWei(XRP/USD) -> 1002306000000000000 ($1.002306), timestamp 1786729532
+```
+
+That is the derivation being validated against the chain itself, not merely against the published feed table.
+
+**Still unproven, and stated as such:** the FDC attestation round-trip and FCC machine registration. FCC registration requires Coston2 indexer database credentials that Flare support issues, and the FDC path additionally requires an X API bearer token in the deployed environment. Neither is a code gap — both paths are built and unit-tested — but neither has executed against the live network, so this submission does not claim they have.
 
 ## Roadmap
 
