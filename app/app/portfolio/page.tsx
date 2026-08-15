@@ -1,9 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ConnectWallet } from "@/components/ConnectWallet";
 import { useAuth } from "@/lib/useAuth";
-import { usePrivy } from "@privy-io/react-auth";
 import { DitherArt } from "@/components/DitherArt";
 import { PoweredBy } from "@/components/PoweredBy";
 import { DeployedOverTimeChart, CreatorDeployedChart, CopyFadeDonut, TradeStatusChart, type DeployPoint } from "@/components/PortfolioCharts";
@@ -122,19 +120,10 @@ function StatusPill({ status }: { status: string | null }) {
 }
 
 export default function PortfolioPage() {
-  const { login, getAccessToken } = usePrivy();
-  const { ready, authenticated, address, via } = useAuth();
+  const { ready, authenticated, signingIn, signIn } = useAuth();
 
-  // Privy's getAccessToken() throws when no provider is mounted, so it is only reachable
-  // when Privy owns the session. With a wallet session the address identifies the user
-  // (see the DEMO-ONLY note in lib/privy.ts — this is not signed, and is env-gated).
-  const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
-    if (via === "privy") {
-      const token = await getAccessToken();
-      return token ? { Authorization: `Bearer ${token}` } : {};
-    }
-    return address ? { "x-wallet-address": address } : {};
-  }, [via, address, getAccessToken]);
+  // The session rides on an httpOnly cookie the browser attaches automatically, so there
+  // are no auth headers to build and no token sitting in JS for a script to steal.
 
   const [data, setData] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -145,7 +134,7 @@ export default function PortfolioPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/portfolio", { headers: await authHeaders() });
+      const res = await fetch("/api/portfolio");
       if (!res.ok) throw new Error(`${res.status}`);
       setData((await res.json()) as PortfolioResponse);
     } catch (e) {
@@ -153,7 +142,7 @@ export default function PortfolioPage() {
     } finally {
       setLoading(false);
     }
-  }, [authenticated, authHeaders]);
+  }, [authenticated]);
 
   useEffect(() => {
     void load();
@@ -187,8 +176,13 @@ export default function PortfolioPage() {
       {ready && !authenticated && (
         <div className="panel" style={{ marginTop: 40, padding: "28px 26px", maxWidth: 480 }}>
           <p className="label" style={{ marginBottom: 16 }}>authentication required</p>
-          <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 20 }}>Connect a wallet to see your copy/fade history and performance.</p>
-          <ConnectWallet />
+          <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 20 }}>
+            Sign in with your wallet to see your copy/fade history and performance. Connecting
+            alone is not enough — the server only trusts an address that has signed for it.
+          </p>
+          <button style={btnPrimary} disabled={signingIn} onClick={() => void signIn()}>
+            {signingIn ? "check your wallet…" : "Sign in with wallet"}
+          </button>
         </div>
       )}
 

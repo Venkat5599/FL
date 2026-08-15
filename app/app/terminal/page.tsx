@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePrivy, useSigners, useWallets } from "@privy-io/react-auth";
 import { useNetwork } from "@/components/NetworkProvider";
+import { useAuth } from "@/lib/useAuth";
 import { DitherArt } from "@/components/DitherArt";
 import { CallTweet } from "@/components/CallTweet";
 import { CreatorSearch } from "@/components/CreatorSearch";
@@ -36,12 +36,8 @@ export default function TerminalPage() {
   // the server (authenticated is false on the server, avoiding a hydration mismatch).
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const { ready, authenticated, login, getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
-  const { addSigners } = useSigners();
+  const { ready, authenticated, signIn } = useAuth();
   const { network } = useNetwork();
-  const signerId = process.env.NEXT_PUBLIC_PRIVY_AUTH_ID_2;
-  const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
   const canTrade = mounted && ready && authenticated;
   const [calls, setCalls] = useState<FeedCall[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,42 +128,28 @@ export default function TerminalPage() {
     return { total: all.length, verified, signals };
   }, [calls]);
 
-  // One-click copy (follow) / fade. Fully automated: if the wallet isn't yet
-  // delegated for auto-trading, we run the one-time delegation consent inline
-  // and then execute — no manual swap form, ever.
-  async function doTrade(callId: number, mode: "copy" | "fade", retried = false) {
+  // One-click copy (follow) / fade.
+  //
+  // An unauthenticated click runs the sign-in handshake rather than bouncing the user to
+  // a login page and losing what they were doing. There is no delegation branch any more:
+  // nothing here spends funds without the user's own wallet signing for it.
+  async function doTrade(callId: number, mode: "copy" | "fade") {
     if (!ready) return;
     if (!authenticated) {
-      login();
+      await signIn();
       return;
     }
     setTrade((s) => ({ ...s, [callId]: { pending: true, msg: mode === "fade" ? "fading…" : "copying…" } }));
     try {
-      const token = await getAccessToken();
       const r = await fetch(`/api/trade/${callId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode, network }),
       });
-      const d = (await r.json()) as { status?: string; txHash?: string; reason?: string; needsDelegation?: boolean };
+      const d = (await r.json()) as { status?: string; txHash?: string; reason?: string };
       if (d.status === "no_pool") {
         // No tradeable pool on the active network — say so immediately, no form.
         setTrade((s) => ({ ...s, [callId]: { msg: d.reason || "no pool available on this network" } }));
-      } else if (d.needsDelegation) {
-        // Not delegated yet → run the one-time "enable auto-trading" consent,
-        // then retry the trade automatically. No token-address form.
-        if (retried || !embeddedWallet || !signerId) {
-          setTrade((s) => ({ ...s, [callId]: { msg: "enable auto-trading (top bar) to trade" } }));
-          return;
-        }
-        setTrade((s) => ({ ...s, [callId]: { pending: true, msg: "enabling auto-trading…" } }));
-        try {
-          await addSigners({ address: embeddedWallet.address, signers: [{ signerId }] });
-        } catch {
-          setTrade((s) => ({ ...s, [callId]: { msg: "auto-trading not enabled — trade cancelled" } }));
-          return;
-        }
-        await doTrade(callId, mode, true);
       } else if (d.status === "executed" || d.status === "sent" || d.txHash) {
         setTrade((s) => ({ ...s, [callId]: { ok: true, msg: `${mode === "fade" ? "faded" : "copied"} ✓`, txHash: d.txHash, network } }));
       } else {
@@ -240,7 +222,7 @@ export default function TerminalPage() {
                   <span className="label">indexed</span><span>{stats.total}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 12 }} className="tnum">
-                  <span className="label">tee-verified</span><span style={{ color: "var(--gain)" }}>{stats.verified}</span>
+                  <span className="label">attested</span><span style={{ color: "var(--gain)" }}>{stats.verified}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 12 }} className="tnum">
                   <span className="label">real signals</span><span>{stats.signals}</span>
@@ -306,7 +288,7 @@ export default function TerminalPage() {
               </span>
             </button>
             <span className="tnum" style={{ alignSelf: "center" }}>{shown.length} {filter === "all" ? "calls" : filter === "signals" ? "signals" : "high-conviction calls"}</span>
-            {!canTrade && <span className="label" style={{ color: "var(--muted)", alignSelf: "center" }}>log in to fade or follow</span>}
+            {!canTrade && <span className="label" style={{ color: "var(--muted)", alignSelf: "center" }}>sign in to fade or follow</span>}
           </div>
 
           {loading && <div className="label flick" style={{ padding: "48px 0" }}>reading the feed…</div>}

@@ -1,15 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "GigaBags",
+  "name": "TAPE",
   "version": "1.0.0",
-  "description": "See a crypto influencer's GigaBags accountability score right on their X profile.",
+  "description": "The verifiable track record for crypto callers, on every X profile. Evidence attested by Flare's Data Connector, prices from FTSOv2.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "GigaBags",
+    "default_title": "TAPE",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -18,15 +18,24 @@
   },
   "host_permissions": [
     "http://localhost:3000/*",
-    "https://gigabags.vercel.app/*",
-    "https://app-opal-omega-44.vercel.app/*"
+    "https://tape-flare.vercel.app/*"
   ],
   "content_scripts": [
     {
-      "matches": ["*://x.com/*", "*://twitter.com/*"],
-      "css": ["content.css"],
-      "js": ["content.js"],
+      "matches": [
+        "*://x.com/*",
+        "*://twitter.com/*"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }

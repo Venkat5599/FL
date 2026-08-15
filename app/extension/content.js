@@ -1,18 +1,39 @@
-// GigaBags — X/Twitter profile content script
-// Injects a "◇ GigaBags" button + compact analytics card on profile pages.
+// TAPE — X/Twitter profile content script
+//
+// Injects a "◇ TAPE" button and a compact record card on profile pages, so the
+// accountability data sits where the calls are actually made rather than behind a tab
+// switch. Everything it shows is sourced from the TAPE API, which in turn reads the
+// Flare chain: posts attested by FDC, marks taken from FTSOv2.
 "use strict";
 
 (() => {
   // ---------------------------------------------------------------------
   // Config
   // ---------------------------------------------------------------------
-  // The deployed app shares one Turso DB with the local live indexer, so this
-  // works out of the box. Swap to localhost if you're running the app locally:
-  //   const BASE = "http://localhost:3000";
-  const BASE = "https://gigabags.vercel.app";
+  // All network access lives in the background service worker (background.js).
+  //
+  // A content script's fetches are judged against https://x.com, so a request to a local
+  // http://localhost dev server is blocked as mixed content before host permissions are
+  // consulted. The worker runs on the extension's own origin and has neither problem, so
+  // this script asks it for data instead of fetching directly.
+  function askWorker(message) {
+    return new Promise((resolve) => {
+      try {
+        chrome.runtime.sendMessage(message, (reply) => {
+          // An extension reload orphans this content script; the callback then fires
+          // with lastError set and no reply. Swallow it rather than throwing into the
+          // page, and let the card fall back to its error state.
+          if (chrome.runtime.lastError || !reply) resolve(null);
+          else resolve(reply);
+        });
+      } catch {
+        resolve(null);
+      }
+    });
+  }
 
-  const LOG = (...args) => console.log("[GigaBags]", ...args);
-  const WARN = (...args) => console.warn("[GigaBags]", ...args);
+  const LOG = (...args) => console.log("[TAPE]", ...args);
+  const WARN = (...args) => console.warn("[TAPE]", ...args);
 
   // Route segments on x.com/twitter.com that are NOT profile handles.
   const RESERVED = new Set([
@@ -202,7 +223,7 @@
     if (openLink) {
       openLink.addEventListener("click", (e) => {
         e.preventDefault();
-        window.open(`${BASE}/k/${encodeURIComponent(handle)}`, "_blank", "noopener,noreferrer");
+        askWorker({ type: "TAPE_BASE" }).then((r) => window.open(`${(r && r.base) || "https://tape-flare.vercel.app"}/k/${encodeURIComponent(handle)}`, "_blank", "noopener,noreferrer"));
       });
     }
     const retry = card.querySelector(".kol-retry");
@@ -238,14 +259,10 @@
       return cached.promise;
     }
     const promise = (async () => {
-      const res = await fetch(`${BASE}/api/creator/${encodeURIComponent(handle)}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      return res.json();
+      const reply = await askWorker({ type: "TAPE_CREATOR", handle });
+      if (!reply) throw new Error("extension worker unavailable — reload the extension");
+      if (!reply.ok) throw new Error(reply.error || "request failed");
+      return reply.data;
     })();
     dataCache.set(key, { at: Date.now(), promise });
     try {
@@ -286,7 +303,7 @@
         const lum = 0.2126 * +m[0] + 0.7152 * +m[1] + 0.0722 * +m[2];
         theme = lum < 128 ? "dark" : "light";
       }
-    } catch (e) {
+    } catch {
       /* default dark */
     }
     document.documentElement.setAttribute("data-kol-theme", theme);
@@ -296,7 +313,7 @@
     return `
       <div class="kol-card-head">
         <span class="kol-mark">◇</span>
-        <span class="kol-brand">GigaBags</span>
+        <span class="kol-brand">TAPE</span>
         <button type="button" class="kol-dismiss" title="Hide" aria-label="Hide">×</button>
       </div>`;
   }
@@ -315,7 +332,7 @@
     return `
       ${renderHeader()}
       <div class="kol-body">
-        <p class="kol-msg">Couldn't reach GigaBags. Is the API running?</p>
+        <p class="kol-msg">Couldn't reach TAPE. Is the API running?</p>
         <div class="kol-actions">
           <button type="button" class="kol-retry kol-linkbtn">retry</button>
         </div>
@@ -326,7 +343,7 @@
     return `
       ${renderHeader()}
       <div class="kol-body">
-        <p class="kol-msg">@${esc(data.handle)} isn't on GigaBags yet.</p>
+        <p class="kol-msg">@${esc(data.handle)} isn't on TAPE yet.</p>
         <div class="kol-actions">
           <a href="#" class="kol-open kol-linkbtn">open dossier ↗</a>
         </div>
@@ -360,7 +377,7 @@
       <div class="kol-body">
         <div class="kol-headline">
           <span class="kol-headline-num ${headlineClass}">${headline}</span>
-          <span class="kol-headline-label">$1k/call vs holding ETH</span>
+          <span class="kol-headline-label">$1k into every call, marked by FTSOv2</span>
         </div>
         <div class="kol-stats-row">
           <div class="kol-stat">
@@ -378,7 +395,11 @@
         </div>
         ${latestHtml}
         <div class="kol-footer">
-          <span class="kol-verified">✓ TEE-verified × ${data.verified ?? 0}</span>
+          <span class="kol-verified">${
+            (data.deleted ?? 0) > 0
+              ? `◇ ${data.deleted} deleted, still on the record`
+              : `◇ on ${esc(data.network?.name ?? "Flare")}`
+          }</span>
           <a href="#" class="kol-open kol-linkbtn">open dossier ↗</a>
         </div>
       </div>`;

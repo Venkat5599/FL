@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePrivy, useWallets, useSigners, useFundWallet } from "@privy-io/react-auth";
 import { ConnectWallet } from "@/components/ConnectWallet";
-import { base, baseSepolia } from "viem/chains";
 import { useBalance, useReadContracts } from "wagmi";
 import { formatEther, formatUnits } from "viem";
 import { useNetwork } from "@/components/NetworkProvider";
+import { useAuth } from "@/lib/useAuth";
 import { NETWORKS, netCfg, type Network } from "@/lib/networks";
 
 // Minimal ERC-20 read ABI (token balances for the vault menu).
@@ -20,8 +19,6 @@ const ERC20_BALANCE_ABI = [
     outputs: [{ name: "", type: "uint256" }],
   },
 ] as const;
-
-const viemChain = (n: Network) => (n === "mainnet" ? base : baseSepolia);
 
 // Tokens surfaced in the vault menu per network (native ETH + the assets that
 // matter for trading on that chain). address:null = native.
@@ -45,93 +42,35 @@ const BALANCE_TOKENS: Record<Network, BalToken[]> = {
   ],
 };
 
-// Shared nav + Privy auth state, mounted once in the root layout. Carries the
-// testnet/mainnet toggle, the embedded-wallet "enable auto-trading" delegation
-// prompt, and (once auto-trading is on) the self-custody vault: token balances
-// available to trade plus a top-up action.
+// Shared nav + wallet session, mounted once in the root layout. Carries the
+// testnet/mainnet toggle, the sign-in action, and the wallet menu: balances plus a
+// top-up route.
+//
+// There is no "enable auto-trading" delegation prompt any more. It used to hand a
+// server-side signer authority over the user's wallet so trades could run unattended;
+// that made the operator custodial in a product whose whole claim is that you do not
+// have to trust the operator. Trades are signed by the user's own wallet or they do not
+// happen.
 export function Header() {
-  const { ready, authenticated, login, logout, user } = usePrivy();
-  const { wallets } = useWallets();
-  // This app uses Privy TEE wallets, so delegation is granted to a server-side
-  // session signer (our registered authorization key quorum) rather than
-  // on-device delegation.
-  const { addSigners, removeSigners } = useSigners();
-  const { fundWallet } = useFundWallet();
+  const { ready, authenticated, connected, address, signingIn, signIn, disconnect } = useAuth();
   const { network, setNetwork } = useNetwork();
-  const signerId = process.env.NEXT_PUBLIC_PRIVY_AUTH_ID_2;
 
-  const [delegating, setDelegating] = useState(false);
-  const [delegateError, setDelegateError] = useState<string | null>(null);
-  const [delegated, setDelegated] = useState(false);
   const [topUpMsg, setTopUpMsg] = useState<string | null>(null);
 
-  const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
-  const walletAccount = user?.linkedAccounts.find(
-    (a) => a.type === "wallet" && a.address === embeddedWallet?.address,
-  ) as { delegated?: boolean } | undefined;
-  const isDelegated = delegated || walletAccount?.delegated === true;
-
-  async function handleDelegate() {
-    if (!embeddedWallet) return;
-    if (!signerId) {
-      setDelegateError("Session signer id not configured (NEXT_PUBLIC_PRIVY_AUTH_ID_2)");
-      return;
-    }
-    setDelegating(true);
-    setDelegateError(null);
-    try {
-      await addSigners({ address: embeddedWallet.address, signers: [{ signerId }] });
-      setDelegated(true);
-    } catch (err) {
-      setDelegateError(err instanceof Error ? err.message : "Delegation failed");
-    } finally {
-      setDelegating(false);
-    }
-  }
-
-  // Revoke the session signer — the backend can no longer auto-sign for this
-  // wallet. Fully user-controlled: they can turn auto-trading off anytime.
-  async function handleRevoke() {
-    if (!embeddedWallet) return;
-    setDelegating(true);
-    setDelegateError(null);
-    try {
-      await removeSigners({ address: embeddedWallet.address });
-      setDelegated(false);
-    } catch (err) {
-      setDelegateError(err instanceof Error ? err.message : "Revoke failed");
-    } finally {
-      setDelegating(false);
-    }
-  }
-
-  async function handleTopUp() {
-    if (!embeddedWallet) return;
+  function handleTopUp() {
+    if (!address) return;
     setTopUpMsg(null);
-    // Testnet: you can't *buy* test tokens, so fiat funding doesn't apply.
-    // Copy the vault address and point the user at the faucets instead.
+    // You cannot buy test tokens, so on testnet the useful action is the faucet plus the
+    // address to send to — not a fiat funding flow that cannot work here.
     if (network === "testnet") {
-      try {
-        await navigator.clipboard.writeText(embeddedWallet.address);
-      } catch {
-        /* clipboard may be blocked; the address is still shown in the header */
-      }
-      window.open("https://faucet.circle.com/", "_blank", "noopener,noreferrer");
-      setTopUpMsg("vault address copied — get testnet FXRP (+ C2FLR for gas) from faucet.flare.network/coston2, then send to the vault");
+      navigator.clipboard?.writeText(address).catch(() => {
+        /* clipboard may be blocked; the address is still shown in the menu */
+      });
+      window.open("https://faucet.flare.network/coston2", "_blank", "noopener,noreferrer");
+      setTopUpMsg("address copied — claim C2FLR for gas at faucet.flare.network/coston2, then acquire FXRP");
       return;
     }
-    // Mainnet: Privy's fiat/transfer funding. Guard the promise so a disabled
-    // funding config surfaces a message instead of crashing the app.
-    try {
-      await fundWallet({ address: embeddedWallet.address, options: { chain: viemChain(network) } });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "";
-      setTopUpMsg(
-        /not enabled/i.test(msg)
-          ? "card/exchange funding isn't enabled for this app — send funds to the vault address directly"
-          : "could not start the funding flow — send funds to the vault address directly",
-      );
-    }
+    setTopUpMsg("send FLR or FXRP to the address above from your exchange or wallet");
   }
 
   const btn: React.CSSProperties = {
@@ -167,30 +106,25 @@ export function Header() {
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
         <NetworkToggle network={network} onChange={setNetwork} />
 
-        <ConnectWallet />
+        {/* Connected but unsigned is a real, common state — the wallet is available and
+            the user simply has not proved it yet. It gets its own affordance rather than
+            being lumped in with signed out, which would hide that they are one click
+            away. */}
+        {(!ready || !connected) && <ConnectWallet />}
 
-        {ready && !authenticated && (
-          <button style={btnPrimary} onClick={() => login()}>Log in</button>
+        {ready && connected && !authenticated && (
+          <button style={btnPrimary} disabled={signingIn} onClick={() => void signIn()}>
+            {signingIn ? "check wallet…" : "Sign in"}
+          </button>
         )}
 
-        {ready && authenticated && (
-          <>
-            {embeddedWallet ? (
-              <VaultMenu
-                address={embeddedWallet.address as `0x${string}`}
-                network={network}
-                isDelegated={isDelegated}
-                busy={delegating}
-                onEnable={() => void handleDelegate()}
-                onDisable={() => void handleRevoke()}
-                onTopUp={() => void handleTopUp()}
-                onLogout={() => void logout()}
-              />
-            ) : (
-              <button style={btn} onClick={() => void logout()}>Log out</button>
-            )}
-            {delegateError && <span className="label" style={{ color: "var(--loss)" }}>{delegateError.slice(0, 40)}</span>}
-          </>
+        {ready && authenticated && address && (
+          <WalletMenu
+            address={address}
+            network={network}
+            onTopUp={handleTopUp}
+            onSignOut={() => void disconnect()}
+          />
         )}
       </div>
 
@@ -246,27 +180,19 @@ function NetworkToggle({ network, onChange }: { network: Network; onChange: (n: 
 // Self-custody vault + account menu. Collapsed: a pill showing one pinned token
 // balance. Expanded: the vault address (copyable), every tracked token balance
 // with a pin control, plus top-up, enable/disable auto-trading, and log out.
-function VaultMenu({
+function WalletMenu({
   address,
   network,
-  isDelegated,
-  busy,
-  onEnable,
-  onDisable,
   onTopUp,
-  onLogout,
+  onSignOut,
 }: {
   address: `0x${string}`;
   network: Network;
-  isDelegated: boolean;
-  busy: boolean;
-  onEnable: () => void;
-  onDisable: () => void;
   onTopUp: () => void;
-  onLogout: () => void;
+  onSignOut: () => void;
 }) {
   const cfg = netCfg(network);
-  const chainId = cfg.chainId as 84532 | 8453;
+  const chainId = cfg.chainId;
   const tokens = BALANCE_TOKENS[network];
   const erc20 = tokens.filter((t) => t.address);
 
@@ -333,7 +259,7 @@ function VaultMenu({
           padding: "5px 10px", background: "transparent", cursor: "pointer",
         }}
       >
-        <span className="label" style={{ color: isDelegated ? "var(--gain)" : "var(--faint)" }}>●</span>
+        <span className="label" style={{ color: "var(--gain)" }}>●</span>
         <span className="label tnum" style={{ fontSize: 11, color: "var(--ink)" }}>
           {fmt(pinnedRow.bal)} {pinnedRow.symbol}
         </span>
@@ -352,10 +278,10 @@ function VaultMenu({
             }}
           >
             {/* vault address */}
-            <div className="label" style={{ color: "var(--faint)" }}>vault · {cfg.chainName}</div>
+            <div className="label" style={{ color: "var(--faint)" }}>wallet · {cfg.chainName}</div>
             <button
               onClick={() => { navigator.clipboard?.writeText(address).catch(() => {}); }}
-              title="copy vault address"
+              title="copy wallet address"
               style={{ ...itemBtn, justifyContent: "space-between", textTransform: "none", letterSpacing: 0, color: "var(--ink)" }}
             >
               <span className="tnum" style={{ fontSize: 11 }}>{address.slice(0, 10)}…{address.slice(-8)}</span>
@@ -388,21 +314,12 @@ function VaultMenu({
             <button onClick={onTopUp} style={{ ...itemBtn, background: "var(--ink)", color: "var(--bg)", borderColor: "var(--ink)" }}>
               Top up
             </button>
-            {isDelegated ? (
-              <button onClick={onDisable} disabled={busy} style={itemBtn}>
-                {busy ? "disabling…" : "Disable auto-trading"}
-              </button>
-            ) : (
-              <button onClick={onEnable} disabled={busy} style={itemBtn}>
-                {busy ? "enabling…" : "Enable auto-trading"}
-              </button>
-            )}
-            <button onClick={onLogout} style={{ ...itemBtn, color: "var(--loss)" }}>
-              Log out
+            <button onClick={onSignOut} style={{ ...itemBtn, color: "var(--loss)" }}>
+              Sign out
             </button>
 
             <div className="label" style={{ color: "var(--faint)", fontSize: 9, textAlign: "center", marginTop: 2, lineHeight: 1.5 }}>
-              trades settle on {cfg.chainName} · inference verified on 0G mainnet
+              positions settle in FXRP on {cfg.chainName} · marked by FTSOv2
             </div>
           </div>
         </>

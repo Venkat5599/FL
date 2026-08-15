@@ -1,14 +1,14 @@
-# GigaBags — browser extension
+# TAPE — browser extension
 
 A Manifest V3 Chrome extension that surfaces a crypto influencer's
-GigaBags accountability stats directly on their X (Twitter) profile.
+TAPE accountability stats directly on their X (Twitter) profile.
 
 On any profile page (e.g. `https://x.com/CryptoTony__`) it injects:
 
-1. A small **"◇ GigaBags"** pill button next to the profile's
+1. A small **"◇ TAPE"** pill button next to the profile's
    Follow / Message / More actions.
 2. A compact analytics card below that action row, fetched live from the
-   GigaBags API — headline P&L %, signal/scored-call counts,
+   TAPE API — headline P&L %, signal/scored-call counts,
    contradiction rate, TEE-verified count, and the latest call snippet.
 3. Clicking the button (or the "open dossier ↗" link in the card) opens
    the full dossier for that handle in a new tab:
@@ -41,7 +41,7 @@ const BASE = "http://localhost:3000";
 ```
 
 By default it targets `http://localhost:3000` (the local dev server for
-the GigaBags app, which runs a live indexer). To use the hosted demo
+the TAPE app, which runs a live indexer). To use the hosted demo
 instead, edit that line to:
 
 ```js

@@ -1,11 +1,13 @@
 import { getDb } from "../lib/db";
 import { classify } from "../lib/classify";
-import { priceAt } from "../lib/graph";
+import { priceNow } from "../lib/graph";
 import { DEFAULT_EXPIRY } from "../lib/signal-schema";
 import { TOKENS } from "../lib/tokens"; // symbol->address map seeded for the demo set
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+// Benchmark asset. Was WETH-on-Base, by pool address; on Flare the comparison that
+// makes sense is the chain's own asset, and FTSOv2 is keyed by SYMBOL, never by address.
+const BENCHMARK = "FLR";
 // Publish threshold. The classifier is now deterministic rules rather than a model, so
 // confidence is evidence-counting with a known scale (see lib/classify.ts) instead of a
 // model-specific calibration that shifted between deployments. 0.7 admits an explicit
@@ -59,7 +61,10 @@ export async function runPipeline(handle: string) {
         s.direction ?? "long",
         expiry,
         s.confidence,
-        isSignal ? (addr ? (expiry <= now ? "settled" : "open") : "unpriceable") : "ambiguous"
+        // Priceability on Flare means "FTSOv2 carries a feed for this symbol", not
+        // "we have a Base pool address for it". Opened as `open`; the marks written
+        // below decide whether it stays that way or becomes `unpriceable`.
+        isSignal ? "open" : "ambiguous"
       );
 
     // The 0G router performs on-chain TEE signature verification at inference
@@ -87,22 +92,37 @@ export async function runPipeline(handle: string) {
       0
     );
 
-    if (isSignal && addr) {
+    if (isSignal && symbol) {
       try {
-        const entry = await priceAt(addr, p.posted_at);
-        const latest = await priceAt(addr, Math.floor(Date.now() / 1000) - 3600);
-        const ethE = await priceAt(WETH, p.posted_at);
-        const ethL = await priceAt(WETH, Math.floor(Date.now() / 1000) - 3600);
+        // Two bugs lived here, and together they made every call unpriceable.
+        //
+        // First, these lookups passed `addr` — a 0x token address left over from pricing
+        // Uniswap pools. FTSOv2 has no concept of a token address; its feeds are keyed by
+        // symbol. Every lookup therefore missed, returned null, and the call below forced
+        // the call to `unpriceable`. That is why 82 of 85 seeded calls carry no score.
+        //
+        // Second, they asked for a price AT `p.posted_at`. FTSO is a spot oracle with no
+        // history, so any historical timestamp returns null by design. Marks have to be
+        // recorded FORWARD, which is what CallTape does on-chain and what this now does
+        // off-chain: the mark is taken now, and stored with the time it was actually
+        // observed rather than backdated to the post.
+        const now = Math.floor(Date.now() / 1000);
+        const entry = await priceNow(symbol);
+        const benchmark = await priceNow(BENCHMARK);
 
         const mk = db.prepare(
           "INSERT OR IGNORE INTO marks (call_id,kind,price_usd,source,marked_at) VALUES (?,?,?,?,?)"
         );
-        if (entry) mk.run(r.lastInsertRowid, "entry", entry.price, entry.source, p.posted_at);
-        if (latest) mk.run(r.lastInsertRowid, "live", latest.price, latest.source, (Date.now() / 1000) | 0);
-        // ETH benchmark stored under d1/d7 kinds, disambiguated by source — Task 7 reads by source
-        if (ethE && ethL) {
-          mk.run(r.lastInsertRowid, "d1", ethE.price, "eth_entry", p.posted_at);
-          mk.run(r.lastInsertRowid, "d7", ethL.price, "eth_latest", (Date.now() / 1000) | 0);
+        if (entry) {
+          // `marked_at: now`, never `p.posted_at`. Backdating an observation we made
+          // today to the moment of the post would be inventing history, which is the one
+          // thing this product exists not to do.
+          mk.run(r.lastInsertRowid, "entry", entry.price, entry.source, now);
+          mk.run(r.lastInsertRowid, "live", entry.price, entry.source, now);
+        }
+        if (benchmark) {
+          mk.run(r.lastInsertRowid, "d1", benchmark.price, "flr_entry", now);
+          mk.run(r.lastInsertRowid, "d7", benchmark.price, "flr_latest", now);
         }
         if (!entry) db.prepare("UPDATE calls SET status='unpriceable' WHERE id=?").run(r.lastInsertRowid);
       } catch (err) {

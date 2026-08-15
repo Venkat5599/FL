@@ -489,7 +489,7 @@ export default function HomePage() {
               }}
             >
               No vetted list of who&apos;s worth following. A scored, verifiable
-              leaderboard — with TEE-verified AI inference behind every score.
+              leaderboard — with the evidence chain behind every score, link by link.
             </p>
             <div style={{ marginTop: "auto", paddingTop: 18 }}>
               <PoweredBy protocol="fcc" />

@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { isRealTweetUrl, resolveTweetUrl } from "@/lib/xlink";
-import { addressUrl } from "@/lib/flare";
+
 import { netCfg, isNetwork } from "@/lib/networks";
 import { PoweredBy } from "@/components/PoweredBy";
 import type { FeedCall } from "@/app/api/feed/route";
@@ -301,14 +301,13 @@ export function CallTweet({
         {/* Flare evidence chain status bar */}
         {ai && (
           <button
-            className={`proof-bar ${ai.verified ? "proof-bar-verified" : ""} ${proofOpen ? "open" : ""}`}
+            className={`proof-bar ${proofOpen ? "open" : ""}`}
             onClick={() => setProofOpen((v) => !v)}
             aria-expanded={proofOpen}
           >
             <span className="proof-bar-left">
               <span className="proof-dot" />
-              <span className="proof-title">{ai.verified ? "TEE-verified" : "evidence chain"}</span>
-              {ai.verified && <span className="proof-check">✓</span>}
+              <span className="proof-title">evidence chain</span>
               <span className="proof-model">Coston2</span>
             </span>
             <span className="proof-toggle">
@@ -423,7 +422,7 @@ export function CallTweet({
               {tradeStatus.pending && <PoweredBy protocol="fxrp" label="via" size={0.85} />}
             </span>
           ) : (
-            !connected && <span className="label" style={{ color: "var(--faint)" }}>log in to trade</span>
+            !connected && <span className="label" style={{ color: "var(--faint)" }}>sign in to trade</span>
           )}
         </div>
 
@@ -433,24 +432,52 @@ export function CallTweet({
   );
 }
 
-type Attestation = {
-  address: string;
-  modelId: string | null;
-  verifiability: string | null;
-  teeType: string | null;
-  teeVerifier: string | null;
-  teeAttested: boolean;
-  trustMode: string | null;
-  providerName: string | null;
+type ChainLink = {
+  status: string;
+  protocol: string;
+  detail: string;
+  contract?: string | null;
+  explorer?: string | null;
+  symbol?: string | null;
+  priceUsd?: number | null;
+  feedId?: string | null;
+  ageSeconds?: number | null;
 };
 type VerifyResult = {
-  status: "verified" | "unavailable" | "failed";
+  status: "verified" | "partial" | "unavailable";
   verified: boolean;
-  provider?: string | null;
-  requestId?: string | null;
-  attestation?: Attestation | null;
+  network?: { name: string; chainId: number; explorer: string };
+  chain?: { evidence: ChainLink; judgement: ChainLink; price: ChainLink };
   detail: string;
 };
+
+/**
+ * How each link's status reads in the UI.
+ *
+ * The API grades every link separately and explains itself; this table is the only place
+ * that decides how a grade LOOKS. Three tiers rather than pass/fail, because the states
+ * in the middle are the honest majority: a live oracle read is genuinely established, a
+ * deterministic local preview genuinely is not an attestation, and a call naming no
+ * asset is not a failure of anything — it simply cannot be priced.
+ */
+const LINK_TONE: Record<string, { color: string; glyph: string; word: string }> = {
+  // established
+  deployed: { color: "var(--gain)", glyph: "●", word: "on-chain" },
+  live: { color: "var(--gain)", glyph: "●", word: "live" },
+  attested: { color: "var(--gain)", glyph: "●", word: "attested" },
+  // honest partial
+  preview: { color: "var(--muted)", glyph: "◐", word: "preview" },
+  pending: { color: "var(--muted)", glyph: "○", word: "pending" },
+  unpriceable: { color: "var(--muted)", glyph: "○", word: "no asset" },
+  no_feed: { color: "var(--muted)", glyph: "○", word: "no feed" },
+  // degraded
+  stale: { color: "var(--loss)", glyph: "○", word: "stale" },
+  unavailable: { color: "var(--loss)", glyph: "○", word: "unreachable" },
+};
+
+function tone(status: string) {
+  return LINK_TONE[status] ?? { color: "var(--muted)", glyph: "○", word: status };
+}
 
 // Re-checks the Flare evidence chain live via /api/verify: FDC attestation state,
 // the enclave verdict, and a fresh FTSOv2 mark.
@@ -465,54 +492,99 @@ function VerifyButton({ callId }: { callId: number }) {
       const r = await fetch(`/api/verify/${callId}`);
       setRes((await r.json()) as VerifyResult);
     } catch {
-      setRes({ status: "unavailable", verified: false, provider: null, detail: "verification request failed" });
+      setRes({ status: "unavailable", verified: false, detail: "verification request failed" });
     }
     setState("done");
   }
 
-  const color =
-    res?.status === "verified" ? "var(--gain)" : res?.status === "failed" ? "var(--loss)" : "var(--muted)";
-  const mark = res?.status === "verified" ? "✓ verified" : res?.status === "failed" ? "✗ failed" : "⚠ unavailable";
+  const links = res?.chain
+    ? ([
+        ["evidence", res.chain.evidence],
+        ["judgement", res.chain.judgement],
+        ["price", res.chain.price],
+      ] as const)
+    : [];
+
+  // How many links are actually established. The old UI collapsed everything that was
+  // not fully verified into one "unavailable" badge, which read as "this is broken" for
+  // a call whose FDC evidence was on-chain and whose oracle mark was live. A count says
+  // what is true.
+  const established = links.filter(([, l]) => ["deployed", "live", "attested"].includes(l.status)).length;
+
+  const headline = !res
+    ? ""
+    : res.verified
+      ? "✓ every link established"
+      : links.length > 0
+        ? `${established} of ${links.length} links established on-chain`
+        : "⚠ could not reach the verifier";
+
+  const headlineColor = !res ? "var(--muted)" : res.verified ? "var(--gain)" : established > 0 ? "var(--ink)" : "var(--loss)";
 
   return (
     <div>
-      <button className={`proof-badge ${state === "loading" ? "" : ""}`} onClick={run} disabled={state === "loading"}>
+      <button className="proof-badge" onClick={run} disabled={state === "loading"}>
         <span className="proof-dot" />
         {state === "loading" ? "checking the chain…" : "verify on-chain now"}
       </button>
       {state === "done" && res && (
         <div style={{ marginTop: 8 }}>
-          <div className="label" style={{ color, lineHeight: 1.5 }}>{mark} · {res.detail}</div>
-          {/* independent, chain-sourced evidence — not our claim */}
-          {(res.attestation || res.requestId || res.provider) && (
-            <div style={{ marginTop: 8, border: "1px solid var(--line)", borderRadius: "var(--radius)", padding: "10px 12px", background: "var(--surface)" }}>
-              <div className="label" style={{ marginBottom: 8 }}>// evidence, read from Flare</div>
-              {res.attestation?.teeType && <EvRow k="TEE hardware" v={res.attestation.teeType} />}
-              {res.attestation?.teeVerifier && <EvRow k="attestation" v={res.attestation.teeVerifier} />}
-              {res.attestation?.verifiability && <EvRow k="verifiability" v={res.attestation.verifiability} />}
-              {res.attestation && <EvRow k="tee attested" v={res.attestation.teeAttested ? "yes ✓" : "no"} good={res.attestation.teeAttested} />}
-              {res.requestId && <EvRow k="request id" v={res.requestId} />}
-              {res.provider && (
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "4px 0" }}>
-                  <span className="label">provider</span>
-                  <a href={addressUrl(res.provider)} target="_blank" rel="noopener noreferrer" className="link" style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink)", textDecoration: "underline", textUnderlineOffset: 2 }}>
-                    {res.provider.slice(0, 12)}… on-chain ↗
-                  </a>
-                </div>
-              )}
+          <div className="label" style={{ color: headlineColor, lineHeight: 1.5 }}>{headline}</div>
+
+          {links.length > 0 && (
+            <div style={{ marginTop: 8, border: "1px solid var(--line)", borderRadius: "var(--radius)", background: "var(--surface)" }}>
+              {links.map(([name, link], i) => {
+                const t = tone(link.status);
+                return (
+                  <div
+                    key={name}
+                    style={{
+                      padding: "10px 12px",
+                      borderTop: i === 0 ? undefined : "1px solid var(--line)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                      <span className="label" style={{ color: t.color }}>{t.glyph}</span>
+                      <span className="label" style={{ color: "var(--ink)" }}>{name}</span>
+                      <span className="label" style={{ color: "var(--faint)" }}>{link.protocol}</span>
+                      <span className="label" style={{ marginLeft: "auto", color: t.color }}>{t.word}</span>
+                    </div>
+
+                    {/* The one link that carries a number worth showing on its own line. */}
+                    {link.priceUsd != null && (
+                      <div className="tnum" style={{ fontSize: 12, color: "var(--ink)" }}>
+                        {link.symbol} = ${link.priceUsd.toLocaleString(undefined, { maximumFractionDigits: 6 })}
+                        {link.ageSeconds != null && (
+                          <span style={{ color: "var(--faint)" }}> · {link.ageSeconds}s old</span>
+                        )}
+                      </div>
+                    )}
+
+                    <p style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.55, margin: 0 }}>{link.detail}</p>
+
+                    {link.explorer && (
+                      <a
+                        href={link.explorer}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="link label"
+                        style={{ color: "var(--ink)", textDecoration: "underline", textUnderlineOffset: 2 }}
+                      >
+                        {link.contract ? `${link.contract.slice(0, 10)}…` : "contract"} on the explorer ↗
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
+
+          <p className="label" style={{ marginTop: 8, color: "var(--faint)", lineHeight: 1.6 }}>{res.detail}</p>
         </div>
       )}
-    </div>
-  );
-}
-
-function EvRow({ k, v, good }: { k: string; v: string; good?: boolean }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "4px 0" }}>
-      <span className="label">{k}</span>
-      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: good ? "var(--gain)" : "var(--ink)", overflowWrap: "anywhere", textAlign: "right" }}>{v}</span>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { buildDossier } from "@/lib/dossier";
+import { activeNetwork } from "@/lib/flare";
 
 // Compact per-creator analytics for the browser extension (and any external
 // caller). CORS-open so a content script on x.com can read it directly.
@@ -28,6 +29,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ handle:
     return NextResponse.json({ found: false, handle }, { status: 200, headers: CORS });
   }
 
+  const net = activeNetwork();
   const dossier = buildDossier(inf.handle);
   const settled = dossier?.stats.settled ?? 0;
   const totalPnl = dossier?.stats.totalPnl ?? 0;
@@ -44,13 +46,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ handle:
        FROM calls c JOIN posts p ON p.id = c.post_id WHERE p.influencer_id = ?`
     )
     .get(inf.id) as { total: number; signals: number | null };
-  const verified = (
+
+  // How many of this creator's posts survive deletion — the single claim the product
+  // exists to make, and the one the extension is best placed to show, since it renders
+  // on the very page the post would have been deleted from.
+  const deleted = (
     db
-      .prepare(
-        `SELECT COUNT(*) AS n FROM artifacts a
-         JOIN calls c ON c.id = a.call_id JOIN posts p ON p.id = c.post_id
-         WHERE p.influencer_id = ? AND a.verified = 1`
-      )
+      .prepare("SELECT COUNT(*) AS n FROM posts WHERE influencer_id = ? AND deleted_at IS NOT NULL")
       .get(inf.id) as { n: number }
   ).n;
 
@@ -64,7 +66,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ handle:
       signalCount: counts.signals ?? 0,
       totalCalls: counts.total ?? 0,
       contradictionRate,
-      verified,
+      deleted,
+      // Which chain the record lives on, so the card can say where to go and check
+      // rather than asking to be believed.
+      network: { name: net.label, chainId: net.chainId, explorer: net.explorer },
+      postRegistry: process.env.NEXT_PUBLIC_POST_REGISTRY_ADDRESS ?? null,
       latest: recent
         ? { content: recent.content, asset: recent.asset_symbol, direction: recent.direction, retPct: recent.retPct }
         : null,

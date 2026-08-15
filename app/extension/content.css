@@ -1,4 +1,4 @@
-/* GigaBags X/Twitter extension — theme-aware (Default / Dim / Lights out).
+/* TAPE X/Twitter extension — theme-aware (Default / Dim / Lights out).
    Theme is chosen in content.js by reading X's page background luminance and
    setting data-kol-theme on <html>. Dark is the default until that runs.
    All rules are scoped under kol- prefixed classnames. */

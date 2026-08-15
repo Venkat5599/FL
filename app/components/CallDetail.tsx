@@ -208,7 +208,7 @@ export function CallDetail({
               <span className="label">TEE receipt</span>
               {!receiptMissing && receipt && (
                 receipt.verified === 1 ? (
-                  <span className="label" style={{ color: "var(--gain)" }}>TEE-verified ✓</span>
+                  <span className="label" style={{ color: "var(--muted)" }}>evidence chain</span>
                 ) : (
                   <span className="label">unverified on this provider</span>
                 )

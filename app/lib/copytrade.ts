@@ -1,6 +1,6 @@
 // Copy/fade sizing + direction logic. Pure and unit-testable (no wallet, no
 // network) — the automation watcher calls this to decide each trade, then
-// hands the result to the Privy-signed Uniswap swap.
+// hands the result to the FXRP position opened in lib/execute.ts.
 
 export type Mode = "copy" | "fade";
 export type CapType = "fixed_usd" | "percent";

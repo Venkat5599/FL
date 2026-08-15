@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { verifyUser } from "@/lib/privy";
+import { verifyUser } from "@/lib/auth";
 
 interface TradeRow {
   creator_handle: string;
@@ -36,7 +36,7 @@ function usdcLeg(t: TradeRow): number {
 // GET → the signed-in user's copy/fade trade history + rich analytics. All
 // capital figures count EXECUTED trades only and use the real on-chain amounts.
 export async function GET(req: Request) {
-  const user = await verifyUser(req);
+  const user = verifyUser(req);
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const db = getDb();
   const trades = db

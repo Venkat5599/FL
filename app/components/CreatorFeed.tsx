@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePrivy } from "@privy-io/react-auth";
+import { useAuth } from "@/lib/useAuth";
 import type { InfluencerSummary } from "@/app/api/influencers/route";
 
 type Mode = "copy" | "fade";
@@ -24,7 +24,7 @@ function monogram(handle: string): string {
 
 export function CreatorFeed() {
   const router = useRouter();
-  const { ready, authenticated, login, getAccessToken } = usePrivy();
+  const { ready, authenticated, signIn } = useAuth();
 
   const [feed, setFeed] = useState<InfluencerSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,10 +48,7 @@ export function CreatorFeed() {
   const loadPositions = useCallback(async () => {
     if (!authenticated) return;
     try {
-      const token = await getAccessToken();
-      const res = await fetch("/api/allocations", {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
+      const res = await fetch("/api/allocations");
       if (!res.ok) return;
       const json = await res.json();
       const rows: { handle: string; mode: Mode; active?: number | boolean }[] = Array.isArray(json)
@@ -63,7 +60,7 @@ export function CreatorFeed() {
     } catch {
       /* non-fatal: feed still works without prior state */
     }
-  }, [authenticated, getAccessToken]);
+  }, [authenticated]);
 
   useEffect(() => {
     void loadPositions();
@@ -72,8 +69,8 @@ export function CreatorFeed() {
   async function act(handle: string, mode: Mode) {
     if (!ready) return;
     if (!authenticated) {
-      setNote("log in to follow or fade");
-      login();
+      setNote("sign in with your wallet to follow or fade");
+      await signIn();
       return;
     }
     setPending(handle + mode);
@@ -82,10 +79,9 @@ export function CreatorFeed() {
     // Optimistic: toggle off if same mode clicked, else set to this mode.
     setPositions((p) => ({ ...p, [handle]: already ? undefined : mode }));
     try {
-      const token = await getAccessToken();
       const res = await fetch("/api/allocations", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ handle, mode, capType: "fixed_usd", capValue: 100 }),
       });
       if (!res.ok) throw new Error(`${res.status}`);

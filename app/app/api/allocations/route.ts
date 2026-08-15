@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { verifyUser } from "@/lib/privy";
+import { verifyUser } from "@/lib/auth";
 
 const DEFAULT_QUICK_USD = 1;
 
 // GET → the user's global quick-trade amount + every per-creator override.
 export async function GET(req: Request) {
-  const user = await verifyUser(req);
+  const user = verifyUser(req);
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const db = getDb();
 
@@ -34,7 +34,7 @@ interface AllocBody {
 
 // POST → set the global amount OR upsert / remove a per-creator override.
 export async function POST(req: Request) {
-  const user = await verifyUser(req);
+  const user = verifyUser(req);
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const b = (await req.json().catch(() => ({}))) as AllocBody;
   const db = getDb();

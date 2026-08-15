@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { verifyUser, resolveEmbeddedWallet } from "@/lib/privy";
+import { verifyUser } from "@/lib/auth";
 import { planTrade, type CallSignal } from "@/lib/copytrade";
 import { executeCopyTrade } from "@/lib/execute";
 import { isNetwork, netCfg, isPriceable, type Network } from "@/lib/networks";
 
 const DEFAULT_QUICK_USD = 1;
 
-// One-click copy/fade for a single call. Ensures the per-creator allocation
-// exists, then (if the wallet is delegated for auto-trading) executes the trade
-// server-side with no popups. If the wallet isn't delegated it returns
-// needsDelegation:true so the UI can fall back to the one-tap signed flow.
+// One-click copy/fade for a single call. Ensures the per-creator allocation exists, then
+// opens the position against an FTSOv2 mark.
+//
+// There is no delegated server-side signer here, and that is deliberate. The previous
+// design asked users to delegate signing authority to our backend so trades could run
+// while they were away; convenient, but it meant the server could move their funds, in a
+// product whose entire pitch is that you do not have to trust the operator. Anything that
+// spends the user's capital is signed by the user's own wallet in the browser.
 // POST /api/trade/[callId] { mode: "copy" | "fade" }
 export async function POST(req: Request, { params }: { params: Promise<{ callId: string }> }) {
-  const user = await verifyUser(req);
+  const user = verifyUser(req);
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { callId } = await params;
@@ -54,14 +58,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ callId:
     });
   }
 
-  // Resolve delegation + wallet from Privy, and mirror it onto our user row.
-  const w = await resolveEmbeddedWallet(user.privyId);
+  // The session address IS the wallet — it signed a nonce to get here, so there is
+  // nothing to resolve from a third party and nothing to keep in sync.
   const now = Math.floor(Date.now() / 1000);
-  db.prepare("UPDATE users SET wallet_address=COALESCE(?, wallet_address), delegated=? WHERE id=?").run(
-    w.address,
-    w.delegated ? 1 : 0,
-    user.userId,
-  );
+  db.prepare("UPDATE users SET wallet_address=? WHERE id=?").run(user.address, user.userId);
 
   // Resolve the effective quick-trade amount (FXRP): a per-creator override
   // wins over the user's global amount, which falls back to the default.
@@ -98,24 +98,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ callId:
     return NextResponse.json({ status: "skipped", reason: "allocation cap already deployed", mode });
   }
 
-  // Not delegated → tell the client to run the one-tap signed flow instead.
-  if (!w.delegated || !w.walletId) {
-    return NextResponse.json({
-      status: "needs_delegation",
-      needsDelegation: true,
-      mode,
-      network,
-      side: planned.side,
-      asset: planned.tokenSymbol,
-      reason: "Auto-trading is off. Enable it once for zero-click, or sign this trade.",
-    });
-  }
-
   const res = await executeCopyTrade({
     userId: user.userId,
-    privyWalletId: w.walletId,
-    walletAddress: w.address,
-    delegated: true,
+    walletAddress: user.address,
     network,
     allocationId: alloc.id,
     callId: call.id,

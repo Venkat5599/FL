@@ -30,9 +30,8 @@ import { activeNetwork, FLARE_NETWORKS } from "./flare";
 
 export interface ExecInput {
   userId: number;
-  privyWalletId: string | null; // Privy embedded wallet id (needed to sign)
+  /** The signed-in wallet. Identity and counterparty are the same address here. */
   walletAddress: string | null;
-  delegated: boolean;
   network?: Network; // active execution network; defaults to testnet
   allocationId: number;
   callId: number | null;
@@ -124,11 +123,6 @@ export async function executeCopyTrade(inp: ExecInput): Promise<ExecResult> {
     const reason = "No wallet connected.";
     logTrade("failed", { reason, entryPriceUsd });
     return { status: "failed", reason, entryPriceUsd };
-  }
-  if (!inp.delegated || !inp.privyWalletId) {
-    const reason = "Wallet is not delegated for auto-trading.";
-    logTrade("failed", { reason, entryPriceUsd });
-    return { status: "needs_delegation", reason, entryPriceUsd };
   }
 
   // 4. Record the open position with its oracle mark.

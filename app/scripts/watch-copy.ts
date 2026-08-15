@@ -60,11 +60,12 @@ export async function runOnce(): Promise<number> {
       const planned = planTrade(signal, alloc, a.balance_usd ?? 0, runningDeployed);
       if (!planned) continue; // cap reached
 
+      // Advisory only, since delegated server-side signing is gone: this records an
+      // oracle-marked position the user can act on, it does not move their funds. Only
+      // the user's own wallet can do that, from the browser.
       const res = await executeCopyTrade({
         userId: a.user_id,
-        privyWalletId: null, // resolved at execution when delegation is live
         walletAddress: a.wallet_address,
-        delegated: a.delegated === 1,
         allocationId: a.allocation_id,
         callId: c.id,
         creatorHandle: a.handle,
