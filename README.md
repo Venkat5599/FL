@@ -236,9 +236,6 @@ Three issues found and fixed during the build, each caught by a test:
 
 ---
 
-## Prior work
-
-TAPE is a port of **GigaBags** (ETHGlobal Lisbon 2026 — 0G Compute, The Graph, Uniswap on Base). The front end, design system and product thinking carry over; **every Flare integration is new** — four contracts, the confidential-compute extension, the FDC pipeline, the FTSO layer, and FXRP settlement. The old 0G, Graph and Uniswap modules were **deleted, not left dormant**. Diff `main` against the parent commits to see the split.
 
 ---
 
