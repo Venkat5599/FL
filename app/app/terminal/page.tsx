@@ -10,6 +10,7 @@ import { CreatorSearch } from "@/components/CreatorSearch";
 import { MarkOnChain } from "@/components/MarkOnChain";
 import type { FeedCall } from "@/app/api/feed/route";
 import type { InfluencerSummary } from "@/app/api/influencers/route";
+import { useHydrated } from "@/lib/useClientState";
 
 type Filter = "all" | "signals" | "conviction";
 
@@ -34,8 +35,7 @@ const POLL_MS = 10_000;
 export default function TerminalPage() {
   // Guard auth-dependent UI until after mount so the first client render matches
   // the server (authenticated is false on the server, avoiding a hydration mismatch).
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
   const { ready, authenticated, signIn } = useAuth();
   const { network } = useNetwork();
   const canTrade = mounted && ready && authenticated;

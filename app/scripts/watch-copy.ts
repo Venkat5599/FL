@@ -87,7 +87,6 @@ async function main() {
     console.log(`watcher: ${n} trade(s) processed`);
     return;
   }
-  // eslint-disable-next-line no-constant-condition
   for (;;) {
     try {
       await runOnce();

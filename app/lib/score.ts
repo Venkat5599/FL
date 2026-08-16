@@ -10,7 +10,16 @@ export function dossierStats(calls: {direction:"long"|"short";entry:number;lates
   calls.forEach((c, i) => {
     const { pnlUsd } = callPnl(c.entry, c.latest, c.direction);
     totalPnl += pnlUsd;
-    c.settled ? (settled++, pnlUsd > 0 && wins++) : open++;
+    // Was a comma-sequence inside a ternary used for its side effects. It read
+    // as an expression but did four mutations, and `pnlUsd > 0 && wins++`
+    // relies on short-circuit evaluation to conditionally increment. Same
+    // behaviour, stated plainly.
+    if (c.settled) {
+      settled++;
+      if (pnlUsd > 0) wins++;
+    } else {
+      open++;
+    }
     const e = eth[i];
     if (e) benchmarkPnl += Math.round(NOTIONAL * (e.latest - e.entry) / e.entry);
   });

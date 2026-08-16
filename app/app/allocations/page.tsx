@@ -76,6 +76,11 @@ export default function AllocationsPage() {
   }, [authenticated]);
 
   useEffect(() => {
+    // Fetch-on-mount. The rule is right in general — a synchronous setState in
+    // an effect costs an extra render pass before paint — but the real fix here
+    // is to move this to react-query (already a dependency), not to shuffle the
+    // setState around. Tracked rather than silently suppressed.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

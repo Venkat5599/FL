@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ConnectWallet } from "@/components/ConnectWallet";
 import { useBalance, useReadContracts } from "wagmi";
 import { formatEther, formatUnits } from "viem";
 import { useNetwork } from "@/components/NetworkProvider";
 import { useAuth } from "@/lib/useAuth";
 import { NETWORKS, netCfg, type Network } from "@/lib/networks";
+import { useLocalStorageValue } from "@/lib/useClientState";
 
 // Minimal ERC-20 read ABI (token balances for the vault menu).
 const ERC20_BALANCE_ABI = [
@@ -221,16 +222,15 @@ function WalletMenu({
   });
 
   const [open, setOpen] = useState(false);
-  const [pinned, setPinned] = useState<string | null>(null);
-  useEffect(() => {
-    try {
-      setPinned(localStorage.getItem("tape.pinnedToken"));
-    } catch {
-      /* ignore */
-    }
-  }, []);
+  // Read through useSyncExternalStore rather than a setState-in-effect, so the
+  // pin also tracks changes made in another tab. `stored` is the persisted
+  // value; `override` holds a pin made in THIS tab, since the storage event
+  // only fires for other tabs.
+  const stored = useLocalStorageValue("tape.pinnedToken");
+  const [override, setOverride] = useState<string | null>(null);
+  const pinned = override ?? stored;
   const pin = (sym: string) => {
-    setPinned(sym);
+    setOverride(sym);
     try {
       localStorage.setItem("tape.pinnedToken", sym);
     } catch {

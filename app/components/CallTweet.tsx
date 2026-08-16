@@ -5,6 +5,7 @@ import Link from "next/link";
 import { isRealTweetUrl, resolveTweetUrl } from "@/lib/xlink";
 
 import { netCfg, isNetwork } from "@/lib/networks";
+import { useNowSeconds } from "@/lib/useClientState";
 import { PoweredBy } from "@/components/PoweredBy";
 import type { FeedCall } from "@/app/api/feed/route";
 
@@ -83,6 +84,11 @@ export function CallTweet({
   useEffect(() => {
     if (!yapMode || activeYap || yapLoading) return;
     let cancelled = false;
+    // Fetch-on-mount. The rule is right in general — a synchronous setState in
+    // an effect costs an extra render pass before paint — but the real fix here
+    // is to move this to react-query (already a dependency), not to shuffle the
+    // setState around. Tracked rather than silently suppressed.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setYapLoading(true);
     fetch(`/api/yap/${call.call_id}`)
       .then((r) => r.json())
@@ -102,7 +108,7 @@ export function CallTweet({
   const dir = call.direction;
   const ai = call.ai;
   const settled = call.status === "settled";
-  const now = Math.floor(Date.now() / 1000);
+  const now = useNowSeconds();
   const isSignal = call.template !== "AMBIGUOUS";
 
   async function submitReport() {

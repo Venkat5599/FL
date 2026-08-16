@@ -54,11 +54,19 @@ export function DeployedOverTimeChart({ points, height = 220 }: { points: Deploy
 
   // Always ground the line at a "start" origin so even a single fill reads as
   // a deliberate step up from zero, not a lonely dot on a blank axis.
-  let cumulative = 0;
-  const series = [{ label: "start", cumulative: 0 }, ...points.map((p) => {
-    cumulative += p.amount;
-    return { label: p.label, cumulative: Math.round(cumulative * 100) / 100 };
-  })];
+  // Built with reduce rather than a `let` accumulated inside .map(). Reassigning
+  // an outer variable during render is what react-hooks/immutability flags, and
+  // it is flagging something real: under concurrent rendering a render can be
+  // started, abandoned and restarted, and a mutable outer binding does not reset
+  // with it. Carrying the running total inside the accumulator makes the whole
+  // computation a pure function of `points`.
+  const series = points.reduce<{ label: string; cumulative: number }[]>(
+    (acc, p) => {
+      const running = acc[acc.length - 1].cumulative + p.amount;
+      return [...acc, { label: p.label, cumulative: Math.round(running * 100) / 100 }];
+    },
+    [{ label: "start", cumulative: 0 }],
+  );
   const sparse = points.length < 3;
 
   return (

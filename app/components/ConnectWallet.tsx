@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { formatUnits } from "viem";
 import { useAccount, useBalance, useChainId, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 
 import { coston2 } from "@/lib/wagmi";
 import { FLARE_NETWORKS, addressUrl } from "@/lib/flare";
+import { useHydrated } from "@/lib/useClientState";
 
 /**
  * Wallet connection for TAPE.
@@ -33,8 +33,7 @@ function short(addr: string) {
 }
 
 export function ConnectWallet() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();

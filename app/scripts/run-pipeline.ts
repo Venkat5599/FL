@@ -3,7 +3,6 @@ import { classify } from "../lib/classify";
 import { priceNow } from "../lib/graph";
 import { DEFAULT_EXPIRY } from "../lib/signal-schema";
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // Benchmark asset. Was WETH-on-Base, by pool address; on Flare the comparison that
 // makes sense is the chain's own asset, and FTSOv2 is keyed by SYMBOL, never by address.
 const BENCHMARK = "FLR";
@@ -50,7 +49,6 @@ export async function runPipeline(handle: string) {
     // this chain can act on. The column is kept for the existing rows that carry one.
     const addr = null;
     const expiry = p.posted_at + (s.expiry_days ?? DEFAULT_EXPIRY[s.template] ?? 30) * 86400;
-    const now = Math.floor(Date.now() / 1000);
 
     const r = db
       .prepare(

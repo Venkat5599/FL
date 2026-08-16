@@ -165,30 +165,16 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # Lint and typecheck are REPORTING-ONLY for now, and that is a deliberate
-      # decision rather than an oversight.
-      #
-      # Both currently fail on pre-existing debt that predates this workflow:
-      # 45 lint errors (mostly no-explicit-any in tests) and a batch of
-      # possibly-null canvas/ctx errors in DitherArt.tsx and
-      # InteractiveDither.tsx. next.config.ts already carries
-      # `typescript: { ignoreBuildErrors: true }` with the note "don't let
-      # pre-existing type errors in the wider app block the deploy build",
-      # so gating CI on them would contradict a call the project already made.
-      #
-      # A CI that is red on its first run teaches everyone to ignore CI, which
-      # costs more than the debt does. These stay visible in the job log and
-      # block nothing until the backlog is cleared — then delete both
-      # continue-on-error lines, and drop ignoreBuildErrors with them.
+      # Both of these BLOCK. They were reporting-only while the backlog existed
+      # (45 lint errors, 25 type errors); that backlog is now cleared, so the
+      # gate is real. Keep it that way — a check that cannot fail is decoration.
       - name: Lint
         run: bun run lint
-        continue-on-error: true
 
       # `next build` type-checks, but running tsc separately means a type error
       # is reported as a type error rather than buried in build output.
       - name: Typecheck
         run: bunx tsc --noEmit
-        continue-on-error: true
 
       - name: Test
         run: bun run test

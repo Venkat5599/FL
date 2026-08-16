@@ -83,10 +83,12 @@ export async function priceNow(symbol: string): Promise<PriceMark | null> {
  * silently dropping the check without saying so — would be far worse than a gap that is
  * documented in the submission and on the roadmap.
  */
-export async function swapsForWallet(
-  _wallet: string,
-  _startSec: number,
-  _endSec: number,
-): Promise<WalletSwap[]> {
-  return [];
-}
+// Typed as a const rather than a function declaration so the signature callers
+// are checked against stays fully specified, while the stub body binds no
+// parameters it does not use. The previous form declared three underscore-
+// prefixed arguments that existed only to be ignored.
+export const swapsForWallet: (
+  wallet: string,
+  startSec: number,
+  endSec: number,
+) => Promise<WalletSwap[]> = async () => [];

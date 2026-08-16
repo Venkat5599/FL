@@ -68,7 +68,7 @@ const POSITIONS = [
  */
 const DEFAULT_VAULT: Address = "0x000000000000000000000000000000000000dEaD";
 
-function vaultAddress(_self: Address): Address {
+function vaultAddress(): Address {
   return (process.env.POSITION_VAULT_ADDRESS as Address) ?? DEFAULT_VAULT;
 }
 
@@ -82,7 +82,7 @@ async function main() {
   const wallet = createWalletClient({ account, chain: toViemChain(net), transport: http(net.rpcUrl) });
 
   const token = await fxrpToken(net);
-  const to = vaultAddress(account.address);
+  const to = vaultAddress();
 
   const balance = (await client.readContract({
     address: token.address,
