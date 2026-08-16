@@ -161,7 +161,7 @@ export default function PortfolioPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6" style={{ padding: "clamp(48px, 10vw, 110px) 24px 100px" }}>
-      <div className="label" style={{ marginBottom: 10 }}>// copy/fade performance · settled in FXRP · priced via FTSOv2</div>
+      <div className="label" style={{ marginBottom: 10 }}>{"// copy/fade performance · settled in FXRP · priced via FTSOv2"}</div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "1px solid var(--line)", paddingBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <h1 style={{ fontSize: "clamp(32px, 6vw, 56px)" }}>Portfolio</h1>
         {ready && authenticated && (
@@ -234,7 +234,7 @@ export default function PortfolioPage() {
 
               {/* ---- capital deployed over time ---- */}
               <section style={{ marginTop: 52 }}>
-                <div className="label" style={{ marginBottom: 16 }}>// capital deployed over time</div>
+                <div className="label" style={{ marginBottom: 16 }}>{"// capital deployed over time"}</div>
                 <div className="panel rise" style={{ padding: "20px 20px 12px" }}>
                   <DeployedOverTimeChart points={deployPoints} />
                 </div>
@@ -244,11 +244,11 @@ export default function PortfolioPage() {
               <section style={{ marginTop: 40 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
                   <div className="panel rise" style={{ padding: 20 }}>
-                    <div className="label" style={{ marginBottom: 16 }}>// copy vs fade</div>
+                    <div className="label" style={{ marginBottom: 16 }}>{"// copy vs fade"}</div>
                     <CopyFadeDonut copies={s.copies} fades={s.fades} />
                   </div>
                   <div className="panel rise" style={{ padding: 20 }}>
-                    <div className="label" style={{ marginBottom: 16 }}>// trade status</div>
+                    <div className="label" style={{ marginBottom: 16 }}>{"// trade status"}</div>
                     <TradeStatusChart executed={s.executed} pending={s.pending} failed={s.failed} />
                   </div>
                 </div>
@@ -257,7 +257,7 @@ export default function PortfolioPage() {
               {/* ---- by creator ---- */}
               {data.byCreator.length > 0 && (
                 <section style={{ marginTop: 52 }}>
-                  <div className="label" style={{ marginBottom: 16 }}>// performance by creator</div>
+                  <div className="label" style={{ marginBottom: 16 }}>{"// performance by creator"}</div>
                   <div className="panel rise" style={{ padding: "18px 20px 8px", marginBottom: 20 }}>
                     <CreatorDeployedChart data={data.byCreator} />
                   </div>
@@ -287,7 +287,7 @@ export default function PortfolioPage() {
               {/* ---- ledger ---- */}
               <section style={{ marginTop: 52 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <div className="label">// ledger · every fill</div>
+                  <div className="label">{"// ledger · every fill"}</div>
                   <PoweredBy protocol="fxrp" label="settled in" size={0.85} />
                 </div>
 

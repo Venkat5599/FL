@@ -269,7 +269,7 @@ export default function HomePage() {
         style={{ padding: "clamp(64px, 12vw, 140px) 24px" }}
       >
         <div className="label" style={{ marginBottom: 10 }}>
-          // how the ledger works
+          {"// how the ledger works"}
         </div>
         <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", maxWidth: "18ch" }}>
           Damning by evidence, never by opinion.
@@ -343,7 +343,7 @@ export default function HomePage() {
         style={{ padding: "0 24px clamp(72px, 12vw, 140px)" }}
       >
         <div className="label" style={{ marginBottom: 10 }}>
-          // why it exists
+          {"// why it exists"}
         </div>
         <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", maxWidth: "20ch" }}>
           The problems finfluencers count on you forgetting.

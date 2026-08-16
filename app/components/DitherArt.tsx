@@ -94,7 +94,7 @@ export function DitherArt({
     const color = getComputedStyle(canvas).color || "#111";
 
     // coverage(cx, cy, t): cx,cy aspect-corrected & centered around 0.5
-    function coverage(cx: number, cy: number, nx: number, t: number): number {
+    const coverage = function coverage(cx: number, cy: number, nx: number, t: number): number {
       const dx = cx - 0.5, dy = cy - 0.5;
       if (shape === "signal") {
         // scattered noise on the left drifting right and condensing into a clean,
@@ -140,13 +140,13 @@ export function DitherArt({
       return sstep(0.5, 0.95, f) * 0.7;
     }
 
-    function resize() {
+    const resize = () => {
       const w = Math.max(1, Math.floor(canvas.clientWidth * dpr));
       const h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
     }
 
-    function draw(t: number) {
+    const draw = (t: number) => {
       resize();
       const w = canvas.width, h = canvas.height;
       const aspect = w / h;
@@ -171,7 +171,7 @@ export function DitherArt({
 
     let raf = 0;
     const start = performance.now();
-    function frame(now: number) {
+    const frame = (now: number) => {
       draw((now - start) / 1000);
       raf = requestAnimationFrame(frame);
     }

@@ -25,7 +25,7 @@
 import { getDb } from "./db";
 import { netCfg, isPriceable, type Network } from "./networks";
 import type { PlannedTrade } from "./copytrade";
-import { readFeedBySymbol, wadToNumber } from "./ftso";
+import { formatPrice, readFeedBySymbol, wadToNumber } from "./ftso";
 import { activeNetwork, FLARE_NETWORKS } from "./flare";
 
 export interface ExecInput {
@@ -138,7 +138,21 @@ export async function executeCopyTrade(inp: ExecInput): Promise<ExecResult> {
     status: "pending",
     entryPriceUsd,
     feedTimestamp: mark.timestampSec,
-    reason: `Position marked at $${entryPriceUsd} via FTSOv2 (${net.quoteSymbol} settlement).`,
+    // Two things were wrong with the previous wording, and both mattered.
+    //
+    // It interpolated the raw float, so a mark rendered as "$63077.69999999999"
+    // whenever the division left a tail. formatPrice() is the display helper
+    // that already handles this, at a precision that suits the magnitude.
+    //
+    // More importantly it said "settlement" while the status is `pending` and
+    // no FXRP has moved — see the comment above. A user reading "FXRP
+    // settlement" would reasonably believe a position had been settled on
+    // chain. Saying what actually happened (the oracle mark) and what has not
+    // (the transfer) is the whole point of this codebase.
+    reason:
+      `Entry marked at $${formatPrice(mark.priceWad)} by FTSOv2 ` +
+      `at ${new Date(mark.timestampSec * 1000).toISOString()}. ` +
+      `Position is pending — no ${net.quoteSymbol} has moved yet.`,
   };
 }
 

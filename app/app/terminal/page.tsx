@@ -165,7 +165,7 @@ export default function TerminalPage() {
       {/* ---- TOP: X/Twitter-style creator search ---- */}
       <div style={{ maxWidth: 680, margin: "0 auto clamp(28px, 5vw, 44px)" }}>
         <div className="label" style={{ textAlign: "center", marginBottom: 10, color: "var(--muted)" }}>
-          // search the terminal
+          {"// search the terminal"}
         </div>
         <CreatorSearch
           creators={(creators ?? []).map((c) => ({ handle: c.handle, display_name: c.display_name }))}
@@ -178,7 +178,7 @@ export default function TerminalPage() {
         {/* ---- LEFT RAIL ---- */}
         <aside className="term-left">
           <div className="term-sticky">
-            <div className="label" style={{ marginBottom: 8 }}>// live feed</div>
+            <div className="label" style={{ marginBottom: 8 }}>{"// live feed"}</div>
             <h1 style={{ fontSize: 30, lineHeight: 1, marginBottom: 14 }}>Terminal</h1>
             <div className="label" style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--muted)", marginBottom: 20 }}>
               <span className="flick" style={{ color: "var(--signal)", fontSize: 14, lineHeight: 1 }}>●</span>

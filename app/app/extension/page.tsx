@@ -54,7 +54,7 @@ const btnGhost: React.CSSProperties = {
 export default function ExtensionPage() {
   return (
     <main className="mx-auto max-w-6xl px-6" style={{ padding: "clamp(48px, 10vw, 110px) 24px 100px" }}>
-      <div className="label" style={{ marginBottom: 10 }}>// receipts, right where the calls get made</div>
+      <div className="label" style={{ marginBottom: 10 }}>{"// receipts, right where the calls get made"}</div>
       <div style={{ borderBottom: "1px solid var(--line)", paddingBottom: 20 }}>
         <h1 style={{ fontSize: "clamp(32px, 6vw, 56px)", maxWidth: "16ch" }}>The browser extension.</h1>
         <p style={{ marginTop: 14, color: "var(--muted)", fontSize: 15, lineHeight: 1.7, maxWidth: "62ch" }}>
@@ -75,7 +75,7 @@ export default function ExtensionPage() {
 
       {/* ---- preview ---- */}
       <section style={{ marginTop: 52 }}>
-        <div className="label" style={{ marginBottom: 16 }}>// what it looks like on a profile</div>
+        <div className="label" style={{ marginBottom: 16 }}>{"// what it looks like on a profile"}</div>
         <div
           className="panel"
           style={{
@@ -103,7 +103,7 @@ export default function ExtensionPage() {
 
       {/* ---- install steps ---- */}
       <section style={{ marginTop: 56 }}>
-        <div className="label" style={{ marginBottom: 16 }}>// install it · no build step, ~60 seconds</div>
+        <div className="label" style={{ marginBottom: 16 }}>{"// install it · no build step, ~60 seconds"}</div>
         <div style={{ display: "grid", gap: 1, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", background: "var(--line)", border: "1px solid var(--line)" }}>
           {STEPS.map((s) => (
             <div key={s.n} className="scan" style={{ background: "var(--bg)", padding: "22px 22px 26px" }}>
@@ -120,7 +120,7 @@ export default function ExtensionPage() {
       {/* ---- config note ---- */}
       <section style={{ marginTop: 48 }}>
         <div className="panel" style={{ padding: "22px 24px", display: "grid", gap: 14 }}>
-          <div className="label">// good to know</div>
+          <div className="label">{"// good to know"}</div>
           <p style={{ color: "var(--muted)", fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>
             It looks for a TAPE API on{" "}
             <span className="tnum" style={{ color: "var(--ink)" }}>localhost:3000</span>{" "}

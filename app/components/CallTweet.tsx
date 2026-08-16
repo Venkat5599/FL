@@ -194,7 +194,7 @@ export function CallTweet({
           <>
             <div className="report-scrim" onClick={() => { setReportOpen(false); setReportMsg(null); }} />
             <div className="report-confirm" role="dialog" aria-label="Report a deletion">
-              <div className="label" style={{ marginBottom: 8 }}>// report a deletion</div>
+              <div className="label" style={{ marginBottom: 8 }}>{"// report a deletion"}</div>
               <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.55, margin: 0 }}>
                 You&apos;re about to report this call&apos;s tweet as deleted. We verify it against X first, false reports are rejected and nothing is hidden.
               </p>
@@ -320,7 +320,7 @@ export function CallTweet({
         {proofOpen && ai && (
           <div className="proof-panel">
             <div className="label" style={{ marginBottom: 10 }}>
-              // three protocols, three separate guarantees
+              {"// three protocols, three separate guarantees"}
             </div>
 
             {/* 1. FDC — the post is proven, not scraped */}

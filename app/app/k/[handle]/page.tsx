@@ -168,7 +168,7 @@ export default function DossierPage() {
       <header style={{ borderBottom: "1px solid var(--line)", paddingBottom: 28, marginBottom: 24, display: "flex", alignItems: "flex-start", gap: 22, flexWrap: "wrap" }}>
         <HeaderAvatar handle={dossier.handle} />
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div className="label">// dossier</div>
+          <div className="label">{"// dossier"}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 8 }}>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(30px, 5.5vw, 52px)", margin: 0, lineHeight: 1 }}>
               <span style={{ color: "var(--faint)" }}>@</span>
@@ -247,15 +247,15 @@ export default function DossierPage() {
         <VerdictBlock stats={dossier.stats} />
         <div className="panel rise" style={{ padding: 16, display: "grid", gap: 16, alignContent: "center" }}>
           <div>
-            <div className="label" style={{ marginBottom: 8 }}>// cumulative p&amp;l per call</div>
+            <div className="label" style={{ marginBottom: 8 }}>{"// cumulative p&amp;l per call"}</div>
             <Sparkline values={sparkValues} positive={dossier.stats.totalPnl >= 0} />
           </div>
           <div>
-            <div className="label" style={{ marginBottom: 8 }}>// signal mix</div>
+            <div className="label" style={{ marginBottom: 8 }}>{"// signal mix"}</div>
             <SignalMix segments={templateSeg} />
           </div>
           <div>
-            <div className="label" style={{ marginBottom: 8 }}>// confidence spread</div>
+            <div className="label" style={{ marginBottom: 8 }}>{"// confidence spread"}</div>
             <MiniBars bars={confBars} />
           </div>
         </div>
@@ -322,7 +322,7 @@ export default function DossierPage() {
           {curve.length > 0 && (
             <div className="panel rise" style={{ padding: "18px 18px 8px", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
-                <div className="label" style={{ marginBottom: 0 }}>// equity curve · $1,000 per call vs holding FLR</div>
+                <div className="label" style={{ marginBottom: 0 }}>{"// equity curve · $1,000 per call vs holding FLR"}</div>
                 <PoweredBy protocol="ftso" label="pricing via" />
               </div>
               <EquityCurveChart data={curve} positive={dossier.stats.totalPnl >= 0} />
@@ -331,18 +331,18 @@ export default function DossierPage() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
             <div className="panel rise" style={{ padding: 18 }}>
-              <div className="label" style={{ marginBottom: 12 }}>// per-token performance (avg %)</div>
+              <div className="label" style={{ marginBottom: 12 }}>{"// per-token performance (avg %)"}</div>
               <TokenPerfChart data={tokenData} />
             </div>
             <div className="panel rise" style={{ padding: 18 }}>
-              <div className="label" style={{ marginBottom: 12 }}>// per-call outcomes</div>
+              <div className="label" style={{ marginBottom: 12 }}>{"// per-call outcomes"}</div>
               <ReturnsTimeline data={returnsData} />
             </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginTop: 16 }}>
             <div className="panel rise" style={{ padding: 18 }}>
-              <div className="label" style={{ marginBottom: 14 }}>// direction bias</div>
+              <div className="label" style={{ marginBottom: 14 }}>{"// direction bias"}</div>
               <DirectionSplit longPct={dossier.insights.longPct} />
               {dossier.insights.bestCall && (
                 <div style={{ marginTop: 20, display: "flex", justifyContent: "space-between", gap: 12, borderTop: "1px solid var(--line)", paddingTop: 14 }}>

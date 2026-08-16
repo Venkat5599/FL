@@ -140,7 +140,7 @@ export function InteractiveDither({ className }: { className?: string }) {
     const mouse = { x: 0.5, y: 0.5, on: 0 };
     const dpr = Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 1, 2);
 
-    function resize() {
+    const resize = () => {
       const w = Math.max(1, Math.floor(canvas.clientWidth * dpr));
       const h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
       if (canvas.width !== w || canvas.height !== h) {
@@ -153,7 +153,7 @@ export function InteractiveDither({ className }: { className?: string }) {
 
     // Listen on window so overlaid hero text/controls don't block interactivity;
     // the lens only lights up while the pointer is actually over the canvas area.
-    function onMove(e: PointerEvent) {
+    const onMove = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
       const nx = (e.clientX - rect.left) / rect.width;
       const ny = (e.clientY - rect.top) / rect.height;
@@ -170,7 +170,7 @@ export function InteractiveDither({ className }: { className?: string }) {
     const start = performance.now();
     let raf = 0;
     let smoothOn = 0;
-    function frame(now: number) {
+    const frame = (now: number) => {
       resize();
       smoothOn += (mouse.on - smoothOn) * 0.08;
       gl.uniform1f(uTime, (now - start) / 1000);

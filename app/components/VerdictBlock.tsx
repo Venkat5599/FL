@@ -2,7 +2,7 @@ export function VerdictBlock({ stats }: { stats: {totalPnl:number;benchmarkPnl:n
   const neg = stats.totalPnl < 0;
   return (
     <div style={{ padding: "32px 0 28px" }}>
-      <div className="label" style={{ marginBottom: 12 }}>// the verdict</div>
+      <div className="label" style={{ marginBottom: 12 }}>{"// the verdict"}</div>
       <div
         className="tnum"
         style={{

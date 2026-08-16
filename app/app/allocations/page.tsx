@@ -135,7 +135,7 @@ export default function AllocationsPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-6" style={{ padding: "clamp(48px, 10vw, 110px) 24px 100px" }}>
-      <div className="label" style={{ marginBottom: 10 }}>// auto-trade sizing · one-click copy/fade</div>
+      <div className="label" style={{ marginBottom: 10 }}>{"// auto-trade sizing · one-click copy/fade"}</div>
       <div style={{ borderBottom: "1px solid var(--line)", paddingBottom: 20 }}>
         <h1 style={{ fontSize: "clamp(32px, 6vw, 56px)" }}>Quick trade amount</h1>
         <p style={{ marginTop: 10, color: "var(--muted)", fontSize: 14, maxWidth: "60ch" }}>
@@ -162,7 +162,7 @@ export default function AllocationsPage() {
         <>
           {/* ---- global quick trade amount ---- */}
           <section style={{ marginTop: 44 }}>
-            <div className="label" style={{ marginBottom: 14 }}>// global quick trade amount</div>
+            <div className="label" style={{ marginBottom: 14 }}>{"// global quick trade amount"}</div>
             <div className="panel" style={{ padding: "24px 26px", display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", gap: 20, alignItems: "end" }}>
               <div>
                 <span className="label" style={{ display: "block", marginBottom: 8 }}>USDC per trade</span>
@@ -185,7 +185,7 @@ export default function AllocationsPage() {
 
           {/* ---- per-creator overrides ---- */}
           <section style={{ marginTop: 48 }}>
-            <div className="label" style={{ marginBottom: 14 }}>// per-creator overrides</div>
+            <div className="label" style={{ marginBottom: 14 }}>{"// per-creator overrides"}</div>
             <div className="panel" style={{ padding: "22px 24px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.4fr) 130px 120px auto", gap: 12, alignItems: "end" }}>
                 <div>

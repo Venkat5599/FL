@@ -71,7 +71,7 @@ export function MarkOnChain({ symbol = "XRP" }: { symbol?: string }) {
   return (
     <div style={{ border: "1px solid var(--line)", padding: 18, marginTop: 20 }}>
       <div className="label" style={{ marginBottom: 6 }}>
-        // write a price to the chain
+        {"// write a price to the chain"}
       </div>
       <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.65, marginBottom: 14 }}>
         FTSOv2 keeps no history, so TAPE records marks forward. This reads {symbol}/USD from

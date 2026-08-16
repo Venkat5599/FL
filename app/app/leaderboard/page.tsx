@@ -88,7 +88,7 @@ export default function LeaderboardPage() {
   return (
     <main className="mx-auto max-w-5xl px-6" style={{ padding: "clamp(48px, 10vw, 110px) 24px 100px" }}>
       {/* header */}
-      <div className="label" style={{ marginBottom: 10 }}>// leaderboard</div>
+      <div className="label" style={{ marginBottom: 10 }}>{"// leaderboard"}</div>
       <div style={{ borderBottom: "1px solid var(--line)", paddingBottom: 22 }}>
         <h1 style={{ fontSize: "clamp(32px, 6vw, 56px)" }}>The record, ranked.</h1>
         <p style={{ marginTop: 10, color: "var(--muted)", fontSize: 14, maxWidth: "60ch" }}>
