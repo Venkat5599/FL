@@ -69,8 +69,6 @@ jobs:
         working-directory: contracts
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: foundry-rs/foundry-toolchain@v1
         with:
@@ -80,6 +78,24 @@ jobs:
         with:
           bun-version: latest
 
+      # forge-std is present in the working tree locally but is not in the
+      # repository: it is not tracked, and it is not registered as a submodule,
+      # so `checkout` (with or without `submodules: recursive`) cannot produce
+      # it and the build fails on "Source lib/forge-std/src/Test.sol not found".
+      #
+      # Fetched here at the exact version the local tree carries (1.16.2)
+      # rather than floating to latest, so a forge-std release cannot change
+      # what this build compiles against without someone editing this line.
+      - name: Fetch forge-std
+        run: |
+          if [ ! -f lib/forge-std/src/Test.sol ]; then
+            git clone --depth 1 --branch v1.16.2 \
+              https://github.com/foundry-rs/forge-std lib/forge-std
+            rm -rf lib/forge-std/.git
+          fi
+
+      # Remappings resolve @openzeppelin and @flarenetwork out of node_modules,
+      # so the Solidity build genuinely depends on the JS install.
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
