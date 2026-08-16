@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS contradictions (
   wallet_event_id INTEGER NOT NULL REFERENCES wallet_events(id), gap_hours REAL);
 
 -- ---- Copy/Fade platform -------------------------------------------------
--- App users (Privy self-custody wallet). balance_usd is the vault balance we
--- track for percent-based allocations (real funds live in the Privy wallet).
+-- App users, keyed by the wallet that signed in (SIWE). balance_usd is the
+-- balance we track for percent-based allocations; real funds stay in the user wallet.
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY, privy_user_id TEXT UNIQUE NOT NULL,
   wallet_address TEXT, delegated INTEGER DEFAULT 0, balance_usd REAL DEFAULT 0,

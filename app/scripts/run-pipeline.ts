@@ -2,7 +2,6 @@ import { getDb } from "../lib/db";
 import { classify } from "../lib/classify";
 import { priceNow } from "../lib/graph";
 import { DEFAULT_EXPIRY } from "../lib/signal-schema";
-import { TOKENS } from "../lib/tokens"; // symbol->address map seeded for the demo set
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // Benchmark asset. Was WETH-on-Base, by pool address; on Flare the comparison that
@@ -39,12 +38,17 @@ export async function runPipeline(handle: string) {
       expiry_days: signal.expiryDays,
       confidence: signal.confidence,
     };
-    // Models often emit the cashtag form ("$PEPE") or extra whitespace; strip to
-    // the bare symbol for both the TOKENS lookup and what we store/display.
+    // The classifier often emits the cashtag form ("$PEPE") or extra whitespace; strip
+    // to the bare symbol, which is what FTSOv2 keys its feeds on and what we display.
     const symbol = s.asset_symbol ? s.asset_symbol.replace(/^\$/, "").trim().toUpperCase() : null;
     const isSignal = s.template !== "NOT_A_SIGNAL" && s.confidence >= CONF_THRESHOLD && !!symbol;
     const template = isSignal ? s.template : "AMBIGUOUS";
-    const addr = symbol ? TOKENS[symbol] ?? null : null;
+    // `asset_address` stays null on Flare. It held an EVM token address only because the
+    // pre-Flare version priced against Uniswap pools, which are keyed by address. FTSOv2
+    // is keyed by SYMBOL and most assets a caller names have no Flare contract at all, so
+    // storing an Ethereum mainnet address here would be a number that points at nothing
+    // this chain can act on. The column is kept for the existing rows that carry one.
+    const addr = null;
     const expiry = p.posted_at + (s.expiry_days ?? DEFAULT_EXPIRY[s.template] ?? 30) * 86400;
     const now = Math.floor(Date.now() / 1000);
 
@@ -67,10 +71,8 @@ export async function runPipeline(handle: string) {
         isSignal ? "open" : "ambiguous"
       );
 
-    // The 0G router performs on-chain TEE signature verification at inference
-    // time (we request it with verify_tee:true) and returns the result in
-    // x_0g_trace.tee_verified. Store it directly — an honest 0/1. TeeTLS models
-    // return null (transport-attested, nothing to verify) and stay 0.
+    // Every call gets an artifact row: the exact input text and the verdict produced
+    // from it, so any reader can re-derive the classification themselves.
     db.prepare(
       `INSERT INTO artifacts (call_id,request_json,response_json,chat_id,tee_signature,provider_address,verified)
        VALUES (?,?,?,?,?,?,?)`

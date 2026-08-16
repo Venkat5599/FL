@@ -418,7 +418,7 @@ export function CallTweet({
                   tx {tradeStatus.txHash.slice(0, 8)}… ↗
                 </a>
               )}
-              {/* routing through Uniswap — surface it while the swap is in flight */}
+              {/* settling in FXRP — surface it while the position is opening */}
               {tradeStatus.pending && <PoweredBy protocol="fxrp" label="via" size={0.85} />}
             </span>
           ) : (

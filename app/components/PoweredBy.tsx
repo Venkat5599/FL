@@ -18,21 +18,6 @@ import { useState } from "react";
 
 export type Protocol = "fdc" | "fcc" | "ftso" | "fxrp" | "flare";
 
-/**
- * Legacy sponsor keys from the pre-Flare build, mapped to their replacements so every
- * existing call site keeps working through the port:
- *   0g      -> fcc   (verifiable inference   -> confidential compute)
- *   graph   -> ftso  (subgraph pricing       -> oracle pricing)
- *   uniswap -> fxrp  (Uniswap execution      -> FXRP settlement)
- */
-export type LegacySponsor = "0g" | "graph" | "uniswap";
-
-const LEGACY_MAP: Record<LegacySponsor, Protocol> = {
-  "0g": "fcc",
-  graph: "ftso",
-  uniswap: "fxrp",
-};
-
 const PROTOCOLS: Record<Protocol, { name: string; full: string; href: string }> = {
   fdc: {
     name: "FDC",
@@ -61,10 +46,6 @@ const PROTOCOLS: Record<Protocol, { name: string; full: string; href: string }> 
   },
 };
 
-function resolve(key: Protocol | LegacySponsor): Protocol {
-  return key in LEGACY_MAP ? LEGACY_MAP[key as LegacySponsor] : (key as Protocol);
-}
-
 export function PoweredBy({
   protocol,
   sponsor,
@@ -72,14 +53,13 @@ export function PoweredBy({
   size = 1,
 }: {
   protocol?: Protocol;
-  /** @deprecated pre-Flare key, mapped via LEGACY_MAP. Prefer `protocol`. */
-  sponsor?: Protocol | LegacySponsor;
+  /** @deprecated alias kept for older call sites. Prefer `protocol`. */
+  sponsor?: Protocol;
   label?: string | null;
   size?: number; // multiplier on the type size
 }) {
   const [hover, setHover] = useState(false);
-  const key = resolve(protocol ?? sponsor ?? "flare");
-  const p = PROTOCOLS[key];
+  const p = PROTOCOLS[protocol ?? sponsor ?? "flare"];
 
   return (
     <a

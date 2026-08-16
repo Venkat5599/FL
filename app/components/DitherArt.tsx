@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 // Halftone dither art engine. Renders an abstract shape as a field of dots whose
 // size tracks the shape's coverage, with subtle living motion (shimmer + flow).
-// Shapes echo GigaBags's thesis and the reference boards:
+// Shapes echo TAPE's thesis and the reference boards:
 //   signal  - scattered noise ring resolving into a dense luminous disc
 //   arrows  - three chevrons of dots streaming forward (fade / deploy)
 //   loop    - a refine ring with a comet head (copy / iterate)

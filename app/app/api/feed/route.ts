@@ -75,11 +75,12 @@ export interface FeedCall {
   deleted_at: number | null;
   latest_price: number | null;
   ai: FeedAiProof | null;
-  yap: FeedYap | null; // 0G-distilled pure signal (0-yap mode); null until distilled
+  yap: FeedYap | null; // distilled pure signal (0-yap mode); null until distilled
 }
 
-// Parse the 0G Compute response envelope for the model, the AI's tool-call
-// classification, and the on-chain trace (provider + request id + cost).
+// Parse a stored inference artifact. New rows carry the deterministic classifier's
+// own output; seeded demo rows still carry the pre-Flare hosted-model envelope, so
+// both shapes are read here and missing fields simply come back null.
 function parseAi(row: FeedRow): FeedAiProof | null {
   if (!row.response_json && !row.artifact_provider) return null;
   let model: string | null = null;

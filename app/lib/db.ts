@@ -7,14 +7,14 @@ import Database from "libsql";
 import { readFileSync, existsSync, copyFileSync } from "fs";
 import path from "path";
 
-// Local-file fallback (no Turso configured). In dev this is ./gigabags.db;
+// Local-file fallback (no Turso configured). In dev this is ./tape.db;
 // on Vercel without Turso it's a per-instance /tmp copy of the committed seed
 // (serverless FS is read-only except /tmp).
 function localDbPath(): string {
   const envPath = process.env.DB_PATH;
 
   if (process.env.VERCEL && !(envPath && envPath.startsWith("/tmp"))) {
-    const runtimePath = "/tmp/gigabags.db";
+    const runtimePath = "/tmp/tape.db";
     if (!existsSync(runtimePath)) {
       const seedPath = envPath ?? path.join(process.cwd(), "seed/demo.db");
       copyFileSync(seedPath, runtimePath);
@@ -22,7 +22,7 @@ function localDbPath(): string {
     return runtimePath;
   }
 
-  return envPath ?? "./gigabags.db";
+  return envPath ?? "./tape.db";
 }
 
 let db: InstanceType<typeof Database> | null = null;
@@ -51,7 +51,7 @@ export function getDb() {
     db.exec(
       "CREATE TABLE IF NOT EXISTS wallet_attributions (influencer_id INTEGER PRIMARY KEY, note TEXT)"
     );
-    // 0-yap mode cache: the 0G-distilled pure signal per call, so the
+    // 0-yap mode cache: the distilled pure signal per call, so the
     // distillation runs once and is reused (idempotent side table).
     db.exec(
       "CREATE TABLE IF NOT EXISTS yap_signals (call_id INTEGER PRIMARY KEY REFERENCES calls(id), bias TEXT, thesis TEXT, levels_json TEXT, tee_verified INTEGER, created_at INTEGER)"

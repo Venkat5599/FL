@@ -1,76 +1,84 @@
-# GigaBags - submission answers
+# TAPE — Flare Summer Signal submission
 
 ## Short description (max 100 characters)
 
-The accountability layer for crypto influencers: build a verifiable record, back the real traders.
+The market remembers — a verifiable track record for crypto callers, built on Flare.
 
 ## Description
 
-Crypto influencers operate with almost no accountability. They post hundreds of "calls" a week, delete the ones that lose, and there is no shared record of whether following them ever made money. GigaBags fixes both sides of that with one thing: a public, verifiable track record.
+Crypto influencers operate with almost no accountability. They post hundreds of calls a week, delete the ones that lose, and present whatever survives as a track record. Every such record was assembled by the person it flatters — the screenshot, the price, and the score all come from someone with a reason to show you that number. There is no shared, checkable record of whether following anyone ever made money.
 
-For a caller who is actually good, that record is an asset they own. Every explicit call they make in public becomes a structured signal (asset, direction, target, confidence) and gets priced against real DEX history, so their edge shows up as numbers they can point to: what following them returned versus just holding ETH. Losing calls are archived and flagged in red instead of disappearing. Each call is checked against the caller's own on-chain wallet, so "said accumulate, sold four hours later" is a contradiction with a transaction hash attached. And every score is produced by AI inference running inside a verifiable enclave, so the record holds up even against us.
+TAPE builds the record they cannot edit. A post is proven to exist by the Flare Data Connector, classified into a structured trade signal inside a confidential-compute enclave whose ranking weights are never published, marked at entry and settlement by FTSOv2, and made actionable in FXRP. Deleting a post no longer erases it; editing one surfaces the edit; losing calls stay on the record in red.
 
-For everyone else, that record is a filter. A leaderboard surfaces the callers who have genuinely earned trust rather than the loudest ones, and each influencer gets a dossier with the equity curve of every call they have made. A browser extension puts that filter where the judging actually happens: open a caller's profile on X and a card drops in with their real P&L, contradiction rate, and TEE-verified call count, right next to the tweets you're trying to evaluate. Once you find someone real, you ride along: copy their calls, or fade the ones who keep getting it wrong, in one click, executed on-chain from a self-custody wallet.
+For a caller who is genuinely good, that record is an asset they own and can point at. For everyone else it is a filter: a leaderboard that surfaces the callers who earned trust rather than the loudest ones, a dossier per caller, and a browser extension that drops the record onto X itself. Once you find someone real, you copy their calls or fade the ones who keep getting it wrong — signed from your own wallet, settled in FXRP.
 
 ## How it's made
 
-The app is Next.js on the App Router with a dither/halftone theme, and it keeps state in a libSQL database (a local SQLite file in development, hosted Turso in production), so the whole pipeline runs from one process: reading an influencer's public calls, classifying them, pricing them, and executing trades. Because Turso is shared and persistent, the deployed site and a local live indexer read and write the same database.
+The app is Next.js 16 on the App Router with a dither / 1-bit forensic theme, keeping state in libSQL (a local SQLite file in development, hosted Turso in production) so the deployed site and a local live indexer share one persistent database.
 
-The AI that reads and judges every call runs on 0G Compute, and that inference is the part we cannot fake. Each post goes to 0G's OpenAI-compatible router with `verify_tee` turned on and a private trust-mode header, so the model executes inside a TDX secure enclave and the router hands back an attestation that this exact inference ran on the stated model, untouched. That is the core claim of the product: a caller's verdict is genuinely the model's output, not a number we typed in, and no one, including us, could edit the reasoning between their tweet and the score. The same verifiable inference powers 0-yap mode, which distills a rambling post down to its bias, a one-line thesis, and the price levels.
+Four Solidity contracts are deployed to Coston2. `PostRegistry` verifies an FDC Web2Json Merkle proof on-chain and stores post, author and content digests; re-attesting with different text emits `ContentDiverged` and keeps the original authoritative, so an edit is visible instead of silently rewriting the text a call was scored against. `CallTape` binds a proved post to a TEE verdict, takes an FTSOv2 mark at open and another at settle, and computes P&L — settlement is permissionless, so a losing result cannot be withheld. `TapeInstructionSender` is the FCC entry point. `FeedMarkLog` records FTSOv2 marks forward, permissionlessly.
 
-The Graph is the live on-chain data all of that scoring reasons over. We query the Uniswap v2 and v3 subgraphs through the gateway (v3 first, v2 as a fallback) for two things the product cannot work without: pricing every call at its exact posted timestamp, so a claim turns into a real return, and pulling a caller's own swap history to run the said-versus-did check. The forensic layer takes each call the AI extracted and matches it against what that wallet actually did on-chain, so a contradiction is grounded in live Subgraph data rather than a static snapshot.
+The confidential-compute idea is the part worth defending: **inputs public and attested, verdict public and signed, function secret.** The ranking weights live inside the enclave and are never published, because a leaderboard with a public formula gets optimised against rather than satisfied. That is a real reason to need a TEE rather than a smart contract.
 
-Execution is Uniswap. On Base mainnet we use the hosted Trading API. Base Sepolia is where it got hacky: the Trading API does not index that chain, so we located the deployed WETH/USDC v3 pools on-chain and call SwapRouter02 directly, quoting in USDC and then decoding the ERC-20 Transfer out of the swap receipt so the portfolio records the real fill instead of a nominal number. Wallets and signing are Privy: each user gets an embedded self-custody wallet and delegates a session signer once, after which every Follow or Fade executes server-side with no popup.
+Pricing is FTSOv2, read through the `FlareContractRegistry` rather than any hardcoded protocol address. The honest consequence, stated plainly because it shapes the whole product: FTSO is a spot oracle with no history, so TAPE cannot reconstruct an entry price after the fact. Marks are recorded *forward*, and every call stores `entryLagSecs` — the gap between publication and its mark — so a late-marked call can be discounted rather than passed off as contemporaneous.
 
-There is also a Chrome/MV3 browser extension that carries the record onto X itself. It's a content script, no server of its own, that reads a CORS-open `/api/creator/[handle]` endpoint on the deployed app, same Turso-backed data, and injects a card into any profile page with that creator's P&L, signal and score counts, contradiction rate, and TEE-verified count, styled to match X's Default, Dim, and Lights-out themes.
+Execution settles in FXRP resolved through `ContractRegistry.getAssetManagerFXRP()`. A position is a directional FXRP allocation marked against a feed, not a DEX swap: Coston2 has no deep liquidity for the long tail of assets callers name, and faking a fill that cannot settle would be worse than not having one. Authentication is Sign-In-With-Ethereum — the server issues a nonce, the wallet signs it, and only then is a session minted. There is no delegated server-side signer; anything that spends a user's capital is signed by that user's own wallet.
 
----
+## What pre-existed, and what was built for this hackathon
 
-# Prize applications
+The rules welcome ported projects provided the two are separated. Stated bluntly:
 
-Code links point at `github.com/Venkat5599/FL` (app lives under `app/`); push `main` before submitting so the line numbers resolve.
+**Pre-existing** (ETHGlobal Lisbon 2026, in `kollateral/`, kept untouched as the exhibit): the product thesis; the Next.js app shell, routing and dither design system; the libSQL schema; the X scraper and archive importer; the dossier, scoring and leaderboard logic; the browser extension shell.
 
-## The Graph - $15,000
+**Newly built for Flare:**
+- All four Solidity contracts (`PostRegistry`, `CallTape`, `TapeInstructionSender`, `FeedMarkLog`) and their tests — none existed before.
+- The FCC TEE extension: deterministic classifier plus sealed-weight ranking engine (`tee/typescript`).
+- The entire Flare data layer: `lib/flare.ts` (registry resolution), `lib/ftso.ts` (FTSOv2 marks), `lib/feeds.ts` (feed-id derivation), `lib/fxrp.ts` (FAssets settlement).
+- FDC Web2Json attestation end-to-end, including the read proxy and `scripts/attest-post.ts`.
+- SIWE wallet authentication, replacing the previous vendor-wallet path entirely.
+- Rewritten execution (`lib/execute.ts`) from DEX swaps to oracle-marked FXRP positions.
 
-**Why we're applicable:** The Graph is GigaBags's live source of on-chain data. An AI and forensic layer reads the Uniswap v2 and v3 subgraphs to price every influencer call at its exact posted timestamp and to pull each caller's own swap history, then reasons over that live data to score their record and flag said-versus-did contradictions. Nothing is mocked, and without the subgraphs there is no price and no wallet check.
+**Removed rather than ported:** the previous inference vendor, subgraph pricing, DEX execution and embedded-wallet provider. Each was replaced by a Flare protocol, not wrapped.
 
-**Line of code:**
-- Pricing, v3 then v2 fallback: https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L41
-- Wallet swap history for the said-versus-did check: https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L114
-- Gateway endpoint (by subgraph id): https://github.com/Venkat5599/FL/blob/main/app/lib/subgraph.ts#L14
-- Consumed by the scoring layer: https://github.com/Venkat5599/FL/blob/main/app/lib/graph.ts#L17
+## Deployed contracts (Coston2, chain 114)
 
-**Ease of use (1-10):** 8
+| Contract | Address |
+|---|---|
+| `PostRegistry` | `0x7b4b536Ac15bE7E5F43276ea71CCC1e1Be6124b4` |
+| `CallTape` | `0xC0309C5dE3f46a20A0f084dF8635d927FD1e22e5` |
+| `TapeInstructionSender` | `0x657f0fAfe5AfD5C2cdEa18840bc25fF4eDa35Fe9` |
+| `FeedMarkLog` | `0x0b5fC92e207FDeF5B33A2767FBd9C9186B01184A` |
 
-**Additional feedback:** The gateway plus API key plus subgraph-by-id flow was clean and fast to wire up, and the Explorer made finding the right Uniswap subgraph ids easy. The friction was historical pricing: getting a token's price at a specific past timestamp meant querying hourly/daily buckets and choosing the nearest one per subgraph, and reconciling v3 (hourly) with v2 (daily) granularity in our own code. A standardized "price at timestamp" query, or a shared price schema across AMMs, would remove most of that glue.
+**A transaction anyone can verify.** Pressing *mark XRP/USD on-chain* sends a feed id and nothing else — the contract reads FTSOv2 *inside* the transaction, so neither the server nor the person clicking picks the number:
 
-## Uniswap Foundation - $10,000
+`0xdcd7dc9458b801d2bf6ede58d8f8cf22dbd051dcaa879294a95c05077cbf8ab0`
 
-**Why we're applicable:** Uniswap is what turns a verdict into a position. The AI scores an influencer's record, and Uniswap is the layer that lets you copy the honest callers or fade the rest in a single tap, so GigaBags is an execution loop driven by AI signals rather than a scoreboard with a swap bolted on. We integrated it two ways for real coverage: the hosted Trading API (quote then swap) for routing on Base mainnet, and, because that API does not index Base Sepolia, direct `SwapRouter02.exactInputSingle` calls against the live WETH/USDC v3 pools on testnet, with the true output amount decoded from the swap receipt so both paths settle as genuine fills. Paired with Privy delegated signing it behaves like an agent acting on a signal: authorize once, and every Follow or Fade after that executes on-chain with no prompt.
+```
+block  34062847
+mark   XRP/USD  $1.00064
+feed   0x015852502f55534400000000000000000000000000   (derived, not hardcoded)
+oracle ts 1786731563   →   written at 1786731573   (+10s)
+```
 
-**Line of code:**
-- Trading API quote + swap (mainnet): https://github.com/Venkat5599/FL/blob/main/app/lib/execute.ts#L119
-- Trading API behind the manual swap ticket: https://github.com/Venkat5599/FL/blob/main/app/api/quote/route.ts#L5
-- Direct SwapRouter02 exactInputSingle + receipt decode (testnet): https://github.com/Venkat5599/FL/blob/main/app/lib/onchain-swap.ts#L130
+## Bounties targeted
 
-**Ease of use (1-10):** 6
+**Confidential Compute Apps.** The scoring weights never leave the enclave. `requestRank` reads a caller's record from `CallTape` storage rather than accepting it as calldata, so the requester chooses *who* is ranked, never *what* counts — a caller cannot submit a flattering subset of their own history and have it signed.
 
-**Additional feedback:** The Trading API is clean where it is supported: one /quote, then /swap, and you have calldata. The blocker was Base Sepolia. The API returns "no route" / ResourceNotFound for pairs whose v3 pools are actually deployed and liquid on-chain (we confirmed WETH/USDC across all fee tiers via the factory), so we had to bypass it and call SwapRouter02 ourselves for testnet. Either index testnet pools or state plainly in the docs that the Trading API is mainnet-only, so teams do not lose hours assuming their request shape is wrong. Surfacing whether a quote is UniswapX versus a plain on-chain route would also help.
+**Interoperable Asset Products.** Copy and fade positions settle in real FXRP, giving XRP holders something to do with the asset: follow a caller whose record is verifiable, without leaving XRP.
 
-## 0G - $15,000
+## Security
 
-**Why we're applicable:** The AI that classifies every post into a structured trade signal, and the 0-yap distillation, both run on 0G Compute with `verify_tee` enabled, so each inference executes in a TEE and returns an attestation. That verifiable inference is the product's core claim: a caller's score is provably the model's output and was not edited by anyone, including us.
+Three issues found and fixed during the build, each caught by a test:
 
-**Line of code:**
-- `verify_tee` on classification: https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L164
-- `verify_tee` on the 0-yap distillation: https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L250
-- Private trust-mode header (pins a TEE provider): https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L33
-- Provider attestation from the 0G registry (independent evidence): https://github.com/Venkat5599/FL/blob/main/app/lib/zg.ts#L109
+1. **The enclave could be fed substituted text.** The TEE needs post text, but the chain stores only a hash — a relayer could obtain a genuine TEE-signed verdict about a post nobody made. `requestClassify` now re-hashes against the FDC-proved `contentHash`. Fuzz-tested.
+2. **A single lucky call topped the leaderboard** (8691 vs 8263 against a sustained 40-call record) because one data point has zero dispersion and so scored perfect consistency. Consistency is now neutral below two observations, and credibility shrinks the whole composite.
+3. **`requestRank` accepted the record as calldata.** It now reads from `CallTape` storage.
 
-**Ease of use (1-10):** 6
+**On the X API token:** FDC commits the entire Web2Json `requestBody` — headers included — on-chain, permanently and publicly. A bearer token placed there would be published forever. The token therefore sits behind a minimal read proxy (`app/api/x-post/[id]/route.ts`) and FDC attests *that* endpoint. This is one trusted hop, stated plainly rather than described as trustless.
 
-**Additional feedback:** The OpenAI-compatible router is the best part: existing OpenAI SDK code worked after only a base-URL and key change. Two things cost us time. First, `verify_tee` and the `X-0G-Provider-Trust-Mode: private` header are what actually produce an attested result, but they were hard to find in the docs; we landed on them by trial. Second, the broker SDK's `processResponse` could not verify router-served responses (the router returns a request id, not an EIP-191 signature to recover), so the broker verification path and the router `verify_tee` path diverge and it was unclear which to trust. Clearer docs on `verify_tee` and trust-mode, plus a list of which models are TEE-verifiable and support function calling (some 404, some reject tools), would help a lot.
+## Known gaps, stated rather than hidden
 
-## Which other partners' technologies did you use?
-
-**Privy** for embedded self-custody wallets and delegated session-signer signing, so a user enables auto-trading once and every Follow/Fade after that executes with no per-trade popup. **Base** (Base mainnet and Base Sepolia) as the execution chain.
+- **FCC machine registration is pending** Coston2 indexer credentials from Flare; the extension is built and tested against a simulated TEE meanwhile.
+- **Said-vs-Did is not implemented on Flare.** The pre-Flare version read a caller's own swaps from an indexed DEX. Flare has no equivalent index, so `swapsForWallet` returns empty and a caller is reported as having no contradictions rather than being penalised for something the chain cannot evidence.
+- **FTSOv2 covers majors only.** Long-tail tickers are recorded `unpriceable` instead of being priced against the wrong thing.
+- **Backfilled demo calls carry seed marks**, labelled as such in the UI. Only calls opened on-chain carry a real FTSO observation.

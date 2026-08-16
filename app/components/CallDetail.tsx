@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { resolveTweetUrl } from "@/lib/xlink";
 import type { DossierCall } from "@/lib/dossier";
-import { FadeTicket } from "./FadeTicket";
 
 interface Receipt {
   request_json: string;
@@ -267,8 +266,6 @@ export function CallDetail({
               </div>
             )}
           </div>
-
-          <FadeTicket call={call} />
         </div>
       </div>
     </>

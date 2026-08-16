@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* GigaBags — dither / 1-bit forensic. LIGHT: bone-white paper, near-black ink,
+/* TAPE — dither / 1-bit forensic. LIGHT: bone-white paper, near-black ink,
    halftone dither as the surface voice, red/green only for money. Dark tokens are
    kept (--dark*) for the high-contrast dithered illustration blocks. */
 :root {

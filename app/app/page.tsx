@@ -12,7 +12,7 @@ const EVIDENCE = [
     k: "BACKTEST",
     t: "Every call, priced.",
     shape: "signal" as const,
-    d: "We scrape their public calls and mark each one against real DEX prices. $1,000 per call, versus just holding ETH. The verdict is arithmetic.",
+    d: "We read their public calls and mark each one against FTSOv2 on-chain. $1,000 per call, versus just holding FLR. The verdict is arithmetic.",
   },
   {
     n: "02",

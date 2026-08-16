@@ -82,7 +82,7 @@ export async function GET(
             {verdictPct}%
           </div>
           <div style={{ display: "flex", marginTop: 24, fontSize: 30, color: "#a3a3a3" }}>
-            $1,000 into every call → ${equityFollow}. Holding ETH → ${equityHold}.
+            $1,000 into every call → ${equityFollow}. Holding FLR → ${equityHold}.
           </div>
           <div style={{ display: "flex", marginTop: 12, fontSize: 24, color: "#737373" }}>
             {stats.settled} settled calls · {stats.winRate}% win rate
@@ -90,7 +90,7 @@ export async function GET(
         </div>
 
         <div style={{ display: "flex", fontSize: 22, color: "#525252" }}>
-          gigabags · scoring verified by TEE inference on 0G
+          tape · attested by FDC, marked by FTSOv2, scored in a Flare TEE
         </div>
       </div>
     ),

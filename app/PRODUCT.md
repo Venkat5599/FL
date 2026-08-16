@@ -1,9 +1,9 @@
-# GigaBags — Product context
+# TAPE — Product context
 
 **Register:** brand (landing) + product (app UI). The landing is the design; the app is a forensic trading terminal.
 
 ## What it is
-An accountability + copy/fade-trading platform for crypto influencers. It scrapes their public calls, backtests each against real prices (verifiable AI on 0G), cross-references their own on-chain wallet to catch "said buy / did sell" contradictions, and lets users auto copy or fade a creator's trades from a self-custody Privy vault via Uniswap.
+An accountability + copy/fade-trading platform for crypto influencers, built on Flare. A post is proven to exist by the Flare Data Connector, classified into a structured trade signal inside a confidential-compute enclave whose ranking weights are never published, marked at entry and settlement by FTSOv2, and made actionable in FXRP. Deleting a post no longer erases it; losing calls stay on the record in red. Users copy a caller they trust or fade one who keeps getting it wrong, signed from their own wallet.
 
 ## Users
 Crypto-native traders and skeptics. They've been burned by influencer shills. They want receipts, and a way to trade against the noise.
