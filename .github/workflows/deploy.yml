@@ -1,0 +1,111 @@
+# CD — production deploy to Vercel, gated on CI.
+#
+# READ BEFORE ENABLING: this repo already has a .vercel/project.json, which
+# means the Vercel Git integration is very likely connected and already
+# deploying on every push to main. If you enable this workflow while that is
+# still on, every push deploys TWICE — two builds, two deployments racing to
+# become production, and a confusing history when one fails.
+#
+# Pick one:
+#   (a) Keep the Vercel Git integration, and leave this workflow disabled.
+#       Simplest, and CI still gates nothing — Vercel deploys regardless of
+#       whether tests pass. That is the tradeoff.
+#   (b) Turn OFF the Git integration in the Vercel dashboard
+#       (Project → Settings → Git → disconnect), and use this. Then a deploy
+#       only happens after CI is green, which is the point of having CI.
+#
+# Option (b) is the production-grade choice, which is why this exists. It is
+# opt-in via the repository variable ENABLE_VERCEL_DEPLOY so that merely
+# merging this file cannot start double-deploying by surprise.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   VERCEL_TOKEN     — account token from vercel.com/account/tokens
+#   VERCEL_ORG_ID    — from app/.vercel/project.json ("orgId")
+#   VERCEL_PROJECT_ID— from app/.vercel/project.json ("projectId")
+# Required repository variable:
+#   ENABLE_VERCEL_DEPLOY = true
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  # Never cancel a deploy mid-flight — a half-applied deploy is worse than a
+  # queued one.
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: deploy to Vercel production
+    runs-on: ubuntu-latest
+    # Two gates: CI must have passed, and the deploy must be explicitly
+    # enabled. workflow_dispatch bypasses the CI gate deliberately, for the
+    # case where you need to ship a rollback without waiting.
+    if: >-
+      vars.ENABLE_VERCEL_DEPLOY == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.conclusion == 'success')
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Vercel CLI
+        run: bun add -g vercel@latest
+
+      # Pulling the environment first means the build here uses exactly the
+      # env vars production uses, rather than a locally guessed set. This is
+      # also why no NEXT_PUBLIC_* literals appear in this workflow: unlike CI,
+      # a deploy must not invent its own configuration.
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Deploy
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "deployed: $url"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # A deploy that returns 200 on the homepage but 500 on the API is a
+      # failed deploy that looks successful. Check a route that actually
+      # touches the database.
+      - name: Smoke test
+        run: |
+          url="${{ steps.deploy.outputs.url }}"
+          for path in / /api/influencers; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$url$path")
+            echo "$code  $path"
+            if [ "$code" != "200" ]; then
+              echo "::error::smoke test failed: $path returned $code"
+              exit 1
+            fi
+          done

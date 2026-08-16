@@ -1,0 +1,182 @@
+# CI for TAPE — contracts, TEE extension, and app, each gated independently.
+#
+# Jobs are split by subtree rather than run as one pipeline because they fail
+# for unrelated reasons and have unrelated toolchains: a Solidity fuzz failure
+# and a React type error should not hide each other behind a single red X.
+#
+# Path filters keep a contracts-only change from spending four minutes
+# rebuilding Next.js, and vice versa. `paths-ignore` on docs is deliberate: a
+# README edit does not need a fuzz run.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+  # Manual trigger, for re-running after a flaky network step without an
+  # empty commit.
+  workflow_dispatch:
+
+# A new push to the same branch makes the in-flight run obsolete. Cancel it
+# rather than paying for a result nobody will read.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # --------------------------------------------------------------------------
+  changes:
+    name: detect changed areas
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      contracts: ${{ steps.filter.outputs.contracts }}
+      tee: ${{ steps.filter.outputs.tee }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'app/**'
+              - '.github/workflows/ci.yml'
+            contracts:
+              - 'contracts/**'
+              - '.github/workflows/ci.yml'
+            tee:
+              - 'tee/**'
+              - '.github/workflows/ci.yml'
+
+  # --------------------------------------------------------------------------
+  contracts:
+    name: contracts — build + test
+    needs: changes
+    if: needs.changes.outputs.contracts == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting
+        run: forge fmt --check
+
+      - name: Build
+        run: forge build --sizes
+
+      # Fuzz runs are raised above the local default here. Locally a fast loop
+      # matters more than depth; in CI the run is unattended, so buy the extra
+      # coverage on the invariants that guard the FDC content-hash check.
+      - name: Test
+        run: forge test -vvv
+        env:
+          FOUNDRY_FUZZ_RUNS: 512
+
+  # --------------------------------------------------------------------------
+  tee:
+    name: TEE extension — test
+    needs: changes
+    if: needs.changes.outputs.tee == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tee/typescript
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Test
+        run: bunx vitest run
+
+  # --------------------------------------------------------------------------
+  app:
+    name: app — lint, types, test, build
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      # `next build` type-checks, but running tsc separately means a type error
+      # is reported as a type error rather than buried in build output.
+      - name: Typecheck
+        run: bunx tsc --noEmit
+
+      - name: Test
+        run: bun run test
+
+      # The build needs the public contract addresses at compile time
+      # (NEXT_PUBLIC_* are inlined). These are deployed Coston2 testnet
+      # addresses and are public by definition — they are on the block
+      # explorer — so they are literals here rather than secrets. Nothing that
+      # signs or authenticates belongs in this list.
+      - name: Build
+        run: bun run build
+        env:
+          NEXT_PUBLIC_FLARE_NETWORK: coston2
+          NEXT_PUBLIC_POST_REGISTRY_ADDRESS: "0x7b4b536Ac15bE7E5F43276ea71CCC1e1Be6124b4"
+          NEXT_PUBLIC_CALL_TAPE_ADDRESS: "0xC0309C5dE3f46a20A0f084dF8635d927FD1e22e5"
+          NEXT_PUBLIC_MARK_LOG_ADDRESS: "0x0b5fC92e207FDeF5B33A2767FBd9C9186B01184A"
+
+  # --------------------------------------------------------------------------
+  # Secret scanning runs on every change, with no path filter and no early
+  # exit. This repo has already had a bearer token and a signer key in flight,
+  # and the FDC design means a credential committed here can end up attested
+  # on-chain permanently. This gate is cheap; the failure it prevents is not.
+  secrets:
+    name: secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: a secret removed in the tip commit is still a leaked
+          # secret if it is reachable anywhere behind it.
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
