@@ -42,6 +42,12 @@ yarn-error.log*
 *.db-wal
 *.db-shm
 
+# ...except the committed demo snapshot. The root .gitignore already negates
+# this path, but a nested .gitignore wins over the root for files beneath it,
+# so the negation has to be repeated here or `seed/demo.db` stays untracked and
+# every deploy 500s on the first query (lib/db.ts copies it into /tmp on Vercel).
+!seed/demo.db
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
